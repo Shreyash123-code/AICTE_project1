@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Stud Safe{% endblock %}
+
+{% block content %}
+<section class="dashboard-section" id="dashboard-section">
+    <div class="section-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header" id="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1 class="page-title">Welcome, <span class="gradient-text">{{ user.first_name }}</span> 👋</h1>
+                <p class="page-subtitle">Manage your notes and bookmarks from your personal dashboard.</p>
+            </div>
+            <a href="{% url 'upload' %}" class="btn btn-primary" id="dashboard-upload-btn">📤 Upload Notes</a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-stats" id="dashboard-stats">
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon">📤</div>
+                <div class="dash-stat-info">
+                    <span class="dash-stat-number">{{ user_notes.count }}</span>
+                    <span class="dash-stat-label">Notes Uploaded</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-icon">🔖</div>
+                <div class="dash-stat-info">
+                    <span class="dash-stat-number">{{ user_bookmarks.count }}</span>
+                    <span class="dash-stat-label">Bookmarked</span>
+                </div>
+            </div>
+            <div class="dash-stat-card dash-stat-clickable" id="downloads-stat-card" onclick="toggleDownloadHistory()"
+                title="Click to see download history">
+                <div class="dash-stat-icon">⬇️</div>
+                <div class="dash-stat-info">
+                    <span class="dash-stat-number">{{ total_downloads }}</span>
+                    <span class="dash-stat-label">Total Downloads <span
+                            style="font-size:11px; opacity:0.6;">▼</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="dashboard-panel" id="profile-panel">
+            <h2 class="panel-title">👤 User Profile</h2>
+            <div class="profile-container">
+                <div class="profile-info-grid">
+                    <div class="info-group">
+                        <label>Full Name</label>
+                        <p>{{ user.get_full_name|default:user.username }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Email Address</label>
+                        <p>{{ user.email }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Birth Date</label>
+                        <p>{{ user.profile.birth_date|default:"Not provided" }}</p>
+                    </div>
+                    <div class="info-group">
+                        <label>Bio</label>
+                        <p>{{ user.profile.bio|default:"Not provided" }}</p>
+                    </div>
+                </div>
+
+                <hr class="panel-divider">
+
+                <button type="button" class="btn btn-primary" id="toggle-profile-form-btn"
+                    onclick="toggleProfileForm()">✏️ Update Profile</button>
+
+                <form method="POST" class="profile-update-form" id="profile-update-form"
+                    style="display: none; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease;">
+                    {% csrf_token %}
+                    <h3 class="form-section-title">Update Your Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ u_form.first_name.id_for_label }}">First Name</label>
+                            {{ u_form.first_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ u_form.last_name.id_for_label }}">Last Name</label>
+                            {{ u_form.last_name }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ u_form.email.id_for_label }}">Email Address</label>
+                            {{ u_form.email }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ p_form.birth_date.id_for_label }}">Birth Date</label>
+                            {{ p_form.birth_date }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ p_form.bio.id_for_label }}">Bio</label>
+                            {{ p_form.bio }}
+                        </div>
+                    </div>
+                    <button type="submit" name="update_profile" class="btn btn-primary">Save Changes</button>
+                </form>
+
+                <script>
+                    function toggleProfileForm() {
+                        const form = document.getElementById('profile-update-form');
+                        const btn = document.getElementById('toggle-profile-form-btn');
+                        if (form.style.display === 'none') {
+                            form.style.display = 'block';
+                            btn.textContent = '✕ Cancel';
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-outline');
+                        } else {
+                            form.style.display = 'none';
+                            btn.textContent = '✏️ Update Profile';
+                            btn.classList.remove('btn-outline');
+                            btn.classList.add('btn-primary');
+                        }
+                    }
+                </script>
+            </div>
+        </div>
+
+        <!-- My Notes -->
+        <div class="dashboard-panel" id="my-notes-panel">
+            <h2 class="panel-title">📚 My Uploaded Notes</h2>
+            {% if user_notes %}
+            <div class="notes-grid">
+                {% for note in user_notes %}
+                <div class="note-card" id="my-note-{{ note.id }}">
+                    <div class="note-card-header">
+                        <span class="note-subject-badge">{{ note.subject.icon }} {{ note.subject.name }}</span>
+                        <span class="note-downloads">⬇️ {{ note.downloads }}</span>
+                    </div>
+                    <h3 class="note-title">{{ note.title }}</h3>
+                    <p class="note-desc">{{ note.description|truncatewords:15 }}</p>
+                    <div class="note-card-footer">
+                        <span class="note-date">Uploaded {{ note.created_at|timesince }} ago</span>
+                    </div>
+                    <div class="note-card-actions">
+                        <a href="javascript:void(0)"
+                            onclick="openPreview('{% url 'preview' note.id %}', '{{ note.title|escapejs }}')"
+                            class="btn btn-outline btn-sm">👁️ View</a>
+                        <a href="javascript:void(0)" onclick="downloadAndRefresh('{% url 'download' note.id %}')"
+                            class="btn btn-primary btn-sm">⬇️ Download</a>
+                        <form method="POST" action="{% url 'delete_note' note.id %}" style="display:inline;"
+                            onsubmit="return confirm('Are you sure you want to delete &quot;{{ note.title|escapejs }}&quot;? This action cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-sm">
+                <p>You haven't uploaded any notes yet.</p>
+                <a href="{% url 'upload' %}" class="btn btn-primary btn-sm">Upload Your First Note</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Bookmarked Notes -->
+        <div class="dashboard-panel" id="bookmarks-panel">
+            <h2 class="panel-title">🔖 My Bookmarks</h2>
+            {% if user_bookmarks %}
+            <div class="notes-grid">
+                {% for bookmark in user_bookmarks %}
+                <div class="note-card" id="bookmark-note-{{ bookmark.note.id }}">
+                    <div class="note-card-header">
+                        <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name
+                            }}</span>
+                        <span class="note-downloads">⬇️ {{ bookmark.note.downloads }}</span>
+                    </div>
+                    <h3 class="note-title">{{ bookmark.note.title }}</h3>
+                    <p class="note-desc">{{ bookmark.note.description|truncatewords:15 }}</p>
+                    <div class="note-card-footer">
+                        <span class="note-author">By {{ bookmark.note.uploaded_by.first_name }}</span>
+                        <span class="note-date">{{ bookmark.note.created_at|timesince }} ago</span>
+                    </div>
+                    <div class="note-card-actions">
+                        <a href="javascript:void(0)"
+                            onclick="openPreview('{% url 'preview' bookmark.note.id %}', '{{ bookmark.note.title|escapejs }}')"
+                            class="btn btn-outline btn-sm">👁️ View</a>
+                        <a href="javascript:void(0)"
+                            onclick="downloadAndRefresh('{% url 'download' bookmark.note.id %}')"
+                            class="btn btn-primary btn-sm">⬇️ Download</a>
+                        <a href="{% url 'toggle_bookmark' bookmark.note.id %}" class="btn btn-outline btn-sm">✕
+                            Remove</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-sm">
+                <p>You haven't bookmarked any notes yet.</p>
+                <a href="{% url 'browse' %}" class="btn btn-primary btn-sm">Browse Notes</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Download History (hidden by default, toggled by clicking Total Downloads stat) -->
+        <div class="dashboard-panel" id="download-history-panel" style="display: none;">
+            <h2 class="panel-title">⬇️ Download History</h2>
+            {% if user_downloads %}
+            <div class="download-history-list">
+                {% for dl in user_downloads %}
+                <div class="download-history-item" id="download-record-{{ dl.id }}">
+                    <div class="download-history-icon">📄</div>
+                    <div class="download-history-info">
+                        <span class="download-history-title">{{ dl.note.title }}</span>
+                        <span class="download-history-meta">{{ dl.note.subject.icon }} {{ dl.note.subject.name }} ·
+                            Downloaded {{ dl.downloaded_at|timesince }} ago</span>
+                    </div>
+                    <a href="{% url 'download' dl.note.id %}" class="btn btn-outline btn-sm">⬇️ Again</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-sm">
+                <p>You haven't downloaded any notes yet.</p>
+                <a href="{% url 'browse' %}" class="btn btn-primary btn-sm">Browse Notes</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .dash-stat-clickable {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .dash-stat-clickable::after {
+        content: '';
+        position: absolute;
+        bottom: 8px;
+        right: 12px;
+        width: 6px;
+        height: 6px;
+        border-right: 2px solid var(--text-muted);
+        border-bottom: 2px solid var(--text-muted);
+        transform: rotate(45deg);
+        transition: transform 0.3s ease;
+    }
+
+    .dash-stat-clickable.active::after {
+        transform: rotate(-135deg);
+    }
+
+    .dash-stat-clickable:hover {
+        border-color: var(--primary-400) !important;
+        box-shadow: var(--shadow-glow) !important;
+    }
+
+    .download-history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .download-history-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+
+    .download-history-item:hover {
+        border-color: var(--border-active);
+    }
+
+    .download-history-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .download-history-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .download-history-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .download-history-meta {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+</style>
+
+<script>
+    function downloadAndRefresh(url) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        setTimeout(() => {
+            iframe.remove();
+            location.reload();
+        }, 1500);
+    }
+
+    function toggleDownloadHistory() {
+        const panel = document.getElementById('download-history-panel');
+        const card = document.getElementById('downloads-stat-card');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            card.classList.add('active');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            panel.style.display = 'none';
+            card.classList.remove('active');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Notes — Stud Safe{% endblock %}
+
+{% block content %}
+<section class="browse-section" id="browse-section">
+    <div class="section-container">
+        <!-- Header -->
+        <div class="browse-header" id="browse-header">
+            <div>
+                <h1 class="page-title">Browse <span class="gradient-text">Notes</span></h1>
+                <p class="page-subtitle">Discover study materials shared by students like you.</p>
+            </div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'upload' %}" class="btn btn-primary" id="browse-upload-btn">📤 Upload Notes</a>
+            {% endif %}
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="browse-filters" id="browse-filters">
+            <form method="get" class="search-form" id="search-form">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="q" class="search-input"
+                        placeholder="Search notes by title, subject, branch..." value="{{ search_query }}"
+                        id="search-input">
+                </div>
+                <button type="submit" class="btn btn-primary" id="search-submit">Search</button>
+            </form>
+
+            <!-- Branch Chips with Subject Dropdowns -->
+            <div class="filter-row" id="filter-row">
+                <label class="filter-label">🎓 Filter by Branch & Subject</label>
+                <div class="branch-filters" id="branch-filters">
+                    <a href="{% url 'browse' %}{% if search_query %}?q={{ search_query }}{% endif %}"
+                        class="filter-chip {% if not current_branch %}active{% endif %}" id="filter-branch-all">
+                        All Branches
+                    </a>
+                    {% for branch in branches %}
+                    <div class="branch-dropdown" id="branch-dropdown-{{ branch.id }}">
+                        <a href="{% url 'browse' %}?branch={{ branch.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                            class="filter-chip branch-chip {% if current_branch == branch.id|stringformat:'d' %}active{% endif %}"
+                            id="filter-branch-{{ branch.id }}">
+                            {{ branch.icon }} {{ branch.name }}
+                            <span class="chip-arrow">▾</span>
+                        </a>
+                        <div class="branch-dropdown-menu">
+                            <div class="dropdown-header">
+                                {{ branch.icon }} {{ branch.name }}
+                            </div>
+                            {% for subject in branch.subjects.all %}
+                            <a href="{% url 'browse' %}?branch={{ branch.id }}&subject={{ subject.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
+                                class="dropdown-item {% if current_subject == subject.id|stringformat:'d' %}active{% endif %}"
+                                id="dropdown-subject-{{ subject.id }}">
+                                {{ subject.icon }} {{ subject.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Active filter indicator -->
+            {% if current_branch or current_subject %}
+            <div class="active-filters">
+                <span class="active-filter-label">Active:</span>
+                {% for branch in branches %}
+                {% if current_branch == branch.id|stringformat:'d' %}
+                <span class="active-filter-tag">{{ branch.icon }} {{ branch.name }}</span>
+                {% endif %}
+                {% endfor %}
+                {% if current_subject %}
+                {% for subject in subjects %}
+                {% if current_subject == subject.id|stringformat:'d' %}
+                <span class="active-filter-tag">→ {{ subject.icon }} {{ subject.name }}</span>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                <a href="{% url 'browse' %}{% if search_query %}?q={{ search_query }}{% endif %}"
+                    class="clear-filters">✕ Clear</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Notes Grid -->
+        {% if notes %}
+        <div class="notes-grid" id="notes-grid">
+            {% for note in notes %}
+            <div class="note-card" id="note-{{ note.id }}">
+                <div class="note-card-header">
+                    <span class="note-subject-badge">{{ note.subject.icon }} {{ note.subject.name }}</span>
+                    <span class="note-downloads">⬇️ {{ note.downloads }}</span>
+                </div>
+                <h3 class="note-title">{{ note.title }}</h3>
+                <p class="note-desc">{{ note.description|truncatewords:20 }}</p>
+                <div class="note-card-footer">
+                    <span class="note-author">By {{ note.uploaded_by.first_name }}</span>
+                    <span class="note-date">{{ note.created_at|timesince }} ago</span>
+                </div>
+                <div class="note-card-actions">
+                    <a href="javascript:void(0)"
+                        onclick="openPreview('{% url 'preview' note.id %}', '{{ note.title|escapejs }}')"
+                        class="btn btn-outline btn-sm" id="preview-{{ note.id }}">👁️ View</a>
+                    <a href="{% url 'download' note.id %}" class="btn btn-primary btn-sm" id="download-{{ note.id }}">⬇️
+                        Download</a>
+                    {% if user.is_authenticated %}
+                    {% if note.id in bookmarked_ids %}
+                    <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-bookmark-active btn-sm"
+                        id="bookmark-{{ note.id }}" title="Remove Bookmark">🔖 Bookmarked</a>
+                    {% else %}
+                    <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-outline btn-sm"
+                        id="bookmark-{{ note.id }}" title="Add Bookmark">🔖 Bookmark</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" id="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No notes found</h3>
+            <p>{% if search_query %}No results for "{{ search_query }}". Try a different search term.{% elif
+                current_branch %}No notes uploaded for this branch yet. Be the first to share!{% else %}No notes
+                have been uploaded yet. Be the first to share!{% endif %}</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'upload' %}" class="btn btn-primary">Upload First Note</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    /* Filter Row */
+    .filter-row {
+        margin-top: 16px;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .branch-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    /* Branch Dropdown Container */
+    .branch-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .branch-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+    .chip-arrow {
+        font-size: 10px;
+        opacity: 0.6;
+        transition: transform 0.2s ease;
+    }
+
+    .branch-dropdown.open .chip-arrow {
+        transform: rotate(180deg);
+        opacity: 1;
+    }
+
+    /* Dropdown Menu */
+    .branch-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        min-width: 280px;
+        max-height: 360px;
+        overflow-y: auto;
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        padding: 8px;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: all 0.2s ease;
+    }
+
+    .branch-dropdown.open .branch-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-header {
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 4px;
+    }
+
+    .dropdown-item {
+        display: block;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .dropdown-item:hover {
+        background: rgba(124, 58, 237, 0.1);
+        color: var(--primary-300);
+        padding-left: 18px;
+    }
+
+    .dropdown-item.active {
+        background: rgba(124, 58, 237, 0.15);
+        color: var(--primary-300);
+        font-weight: 600;
+    }
+
+    /* Scrollbar for dropdown */
+    .branch-dropdown-menu::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .branch-dropdown-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .branch-dropdown-menu::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 3px;
+    }
+
+    /* Active Filters Bar */
+    .active-filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 10px 16px;
+        background: rgba(124, 58, 237, 0.08);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        border-radius: var(--radius-md);
+        flex-wrap: wrap;
+    }
+
+    .active-filter-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+
+    .active-filter-tag {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--primary-300);
+        background: rgba(124, 58, 237, 0.15);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    .clear-filters {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-decoration: none;
+        margin-left: auto;
+        transition: color 0.15s ease;
+    }
+
+    .clear-filters:hover {
+        color: #ef4444;
+    }
+
+    /* Bookmark Glow */
+    .btn-bookmark-active {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border: 1.5px solid rgba(251, 191, 36, 0.5);
+        animation: bookmark-glow 2s ease-in-out infinite;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .btn-bookmark-active:hover {
+        background: rgba(251, 191, 36, 0.25);
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+    }
+
+    @keyframes bookmark-glow {
+
+        0%,
+        100% {
+            box-shadow: 0 0 5px rgba(251, 191, 36, 0.2), 0 0 10px rgba(251, 191, 36, 0.1);
+        }
+
+        50% {
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.2);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .branch-dropdown-menu {
+            min-width: 240px;
+            left: auto;
+            right: 0;
+        }
+    }
+</style>
+
+<script>
+    // Click-to-toggle branch dropdowns
+    document.querySelectorAll('.branch-dropdown').forEach(function (dropdown) {
+        const chip = dropdown.querySelector('.branch-chip');
+        chip.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // Close all other dropdowns
+            document.querySelectorAll('.branch-dropdown.open').forEach(function (other) {
+                if (other !== dropdown) other.classList.remove('open');
+            });
+            // Toggle this one
+            dropdown.classList.toggle('open');
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.branch-dropdown')) {
+            document.querySelectorAll('.branch-dropdown.open').forEach(function (d) {
+                d.classList.remove('open');
+            });
+        }
+    });
+</script>
+{% endblock %}

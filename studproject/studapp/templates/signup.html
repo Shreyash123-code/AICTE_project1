@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up — Stud Safe{% endblock %}
+
+{% block content %}
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.58/build/spline-viewer.js"></script>
+
+<section class="auth-section" id="signup-section">
+    <div class="auth-container">
+        <div class="auth-visual">
+            <!-- 3D Box filling the visual container top to bottom -->
+            <div class="spline-container">
+                <spline-viewer id="robot-viewer" url="https://prod.spline.design/jfpIHh5THBvS-0vK/scene.splinecode"
+                    events-target="global" loading-background="transparent" background="transparent"></spline-viewer>
+            </div>
+            <div class="auth-visual-content">
+                <h2>Join the <span class="gradient-text">StudSafe</span> Community</h2>
+                <p>Create an account to upload your notes, bookmark favorites, and help fellow students succeed.</p>
+                <div class="auth-visual-features">
+                    <div class="avf-item"><span>📤</span> Upload unlimited notes</div>
+                    <div class="avf-item"><span>🔖</span> Bookmark your favorites</div>
+                    <div class="avf-item"><span>📊</span> Track your contributions</div>
+                    <div class="avf-item"><span>🎓</span> 100% free forever</div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-form-container" id="signup-form-container">
+            <div class="auth-form-header">
+                <h1>Create Account</h1>
+                <p>Already have an account? <a href="{% url 'login' %}" id="signup-login-link">Sign in</a></p>
+            </div>
+            <form method="post" class="auth-form" id="signup-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signup-first-name">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                        <span class="form-error">{{ form.first_name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-last-name">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                        <span class="form-error">{{ form.last_name.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <span class="form-error">{{ form.username.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <span class="form-error">{{ form.email.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="signup-password1">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <span class="form-error">{{ form.password1.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="signup-password2">Confirm Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <span class="form-error">{{ form.password2.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-full" id="signup-submit">Create Account</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    .auth-section {
+        padding-top: 100px;
+    }
+
+    .auth-form-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .auth-form-header,
+    .auth-form {
+        width: 100%;
+    }
+
+    /* Fixed & Filling 3D Viewport Styling */
+    .spline-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: auto;
+        background: transparent;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #robot-viewer {
+        width: 3500px;
+        height: 2500px;
+        transform: scale(2.5) translateZ(0);
+        background: transparent;
+        flex-shrink: 0;
+        margin-top: 150px;
+        image-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .auth-visual {
+        position: relative;
+        overflow: hidden;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 750px;
+        border-radius: var(--radius-xl);
+        background: var(--bg-primary);
+        border: 1px solid var(--border-subtle);
+        padding: 40px;
+    }
+
+    .auth-visual-content {
+        position: relative;
+        z-index: 2;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 45px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        pointer-events: none;
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .auth-visual-features {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+        text-align: left;
+    }
+
+    .avf-item {
+        width: 100%;
+        max-width: 250px;
+    }
+
+    @media (max-width: 1024px) {
+        .auth-container {
+            grid-template-columns: 1fr !important;
+            gap: 40px;
+        }
+
+        .auth-visual {
+            min-height: 550px;
+            padding: 30px;
+        }
+
+        #robot-viewer {
+            width: 2000px;
+            height: 1800px;
+            transform: scale(1.8);
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const password1Input = document.getElementById('signup-password1');
+        const password2Input = document.getElementById('signup-password2');
+        const splineViewer = document.getElementById('robot-viewer');
+
+        const hideEyes = () => {
+            const events = ['look_away', 'hide_eyes', 'cover_eyes', 'hide', 'Close Eyes', 'Cover'];
+            events.forEach(event => splineViewer.emitEvent(event, 'base'));
+            events.forEach(event => splineViewer.emitEvent(event, 'Robot'));
+        };
+
+        const showEyes = () => {
+            const events = ['look_back', 'show_eyes', 'uncover_eyes', 'show', 'Open Eyes', 'Uncover'];
+            events.forEach(event => splineViewer.emitEvent(event, 'base'));
+            events.forEach(event => splineViewer.emitEvent(event, 'Robot'));
+        };
+
+        if (password1Input) {
+            password1Input.addEventListener('focus', hideEyes);
+            password1Input.addEventListener('blur', showEyes);
+        }
+
+        if (password2Input) {
+            password2Input.addEventListener('focus', hideEyes);
+            password2Input.addEventListener('blur', showEyes);
+        }
+    });
+</script>
+{% endblock %}
