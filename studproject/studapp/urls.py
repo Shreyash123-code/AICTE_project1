@@ -13,4 +13,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('bookmark/<int:note_id>/', views.toggle_bookmark, name='toggle_bookmark'),
     path('delete/<int:note_id>/', views.delete_note, name='delete_note'),
+    path('api/subjects/<int:branch_id>/', views.get_subjects, name='get_subjects'),
 ]

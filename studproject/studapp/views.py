@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import FileResponse
+from django.http import FileResponse, JsonResponse
 from django.db.models import Q, Count
 from .models import Note, Subject, Branch, Bookmark, Download
 from .forms import SignUpForm, NoteUploadForm, UserUpdateForm, ProfileUpdateForm
@@ -113,6 +113,13 @@ def browse_notes(request):
         'bookmarked_ids': bookmarked_ids,
     }
     return render(request, 'browse.html', context)
+
+
+def get_subjects(request, branch_id):
+    """Return subjects for a given branch as JSON (for AJAX)."""
+    subjects = Subject.objects.filter(branch_id=branch_id).order_by('name')
+    data = [{"id": s.id, "name": s.name} for s in subjects]
+    return JsonResponse(data, safe=False)
 
 
 @login_required(login_url='login')

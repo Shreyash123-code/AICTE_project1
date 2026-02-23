@@ -77,36 +77,34 @@
 </style>
 
 <script>
-    // Build the branch → subject mapping from server data
-    const subjectsByBranch = {};
-    {% for subject in form.subject.field.queryset %}
-    {% if subject.branch %}
-    if (!subjectsByBranch[{{ subject.branch.id }}]) {
-        subjectsByBranch[{{ subject.branch.id }
-    }] =[];
-    }
-    subjectsByBranch[{{ subject.branch.id }}].push({
-        id: {{ subject.id }},
-        name: "{{ subject.name|escapejs }}"
-    });
-    {% endif %}
-    {% endfor %}
-
     const branchSelect = document.getElementById('note-branch');
     const subjectSelect = document.getElementById('note-subject');
+
+    // Clear subjects on page load — user must pick a branch first
+    subjectSelect.innerHTML = '<option value="">-- Select Branch First --</option>';
 
     branchSelect.addEventListener('change', function () {
         const branchId = this.value;
         // Clear current options
-        subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        subjectSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
-        if (branchId && subjectsByBranch[branchId]) {
-            subjectsByBranch[branchId].forEach(function (subj) {
-                const option = document.createElement('option');
-                option.value = subj.id;
-                option.textContent = subj.name;
-                subjectSelect.appendChild(option);
-            });
+        if (branchId) {
+            fetch('/api/subjects/' + branchId + '/')
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+                    data.forEach(function (subj) {
+                        const option = document.createElement('option');
+                        option.value = subj.id;
+                        option.textContent = subj.name;
+                        subjectSelect.appendChild(option);
+                    });
+                })
+                .catch(() => {
+                    subjectSelect.innerHTML = '<option value="">-- Error loading subjects --</option>';
+                });
+        } else {
+            subjectSelect.innerHTML = '<option value="">-- Select Branch First --</option>';
         }
     });
 

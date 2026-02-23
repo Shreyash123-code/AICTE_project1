@@ -12,12 +12,12 @@ build/
 # Virtual environment
 safeenv/
 venv/
+.venv/
 env/
 .env
 
 # Django
 *.sqlite3
-db.sqlite3
 /media/
 
 # IDE
