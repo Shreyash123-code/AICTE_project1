@@ -131,4 +131,43 @@
         }
     }
 </style>
+
+<script>
+(function () {
+    const form = document.getElementById('login-form');
+    if (!form) return;
+
+    function showErr(input, msg) {
+        clearErr(input);
+        const span = document.createElement('span');
+        span.className = 'form-error';
+        span.textContent = msg;
+        input.parentElement.appendChild(span);
+        input.classList.add('input-error');
+    }
+    function clearErr(input) {
+        const old = input.parentElement.querySelector('.form-error');
+        if (old) old.remove();
+        input.classList.remove('input-error');
+    }
+
+    form.addEventListener('submit', function (e) {
+        form.querySelectorAll('.form-error').forEach(el => el.remove());
+        form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+        let valid = true;
+
+        const username = document.getElementById('login-username');
+        const password = document.getElementById('login-password');
+
+        if (username.value.trim().length < 3) {
+            showErr(username, 'Username must be at least 3 characters.'); valid = false;
+        }
+        if (!password.value) {
+            showErr(password, 'Password is required.'); valid = false;
+        }
+
+        if (!valid) e.preventDefault();
+    });
+})();
+</script>
 {% endblock %}

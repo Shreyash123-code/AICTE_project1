@@ -52,8 +52,7 @@
                             <a href="{% url 'browse' %}?branch={{ branch.id }}&subject={{ subject.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
                                 class="dropdown-item {% if current_subject == subject.id|stringformat:'d' %}active{% endif %}"
                                 id="dropdown-subject-{{ subject.id }}">
-                                {{ subject.icon }} {{ subject.name }} <span class="subject-note-count">({{
-                                    subject.note_count }})</span>
+                                {{ subject.icon }} {{ subject.name }}
                             </a>
                             {% endfor %}
                         </div>
@@ -88,7 +87,18 @@
         {% if notes %}
         <div class="notes-grid" id="notes-grid">
             {% for note in notes %}
-            <div class="note-card" id="note-{{ note.id }}">
+            <div class="note-card note-card-clickable" id="note-{{ note.id }}"
+                onclick="openNoteModal(this)"
+                data-title="{{ note.title|escapejs }}"
+                data-description="{{ note.description|escapejs }}"
+                data-subject="{{ note.subject.icon }} {{ note.subject.name }}"
+                data-branch="{{ note.subject.branch.name }}"
+                data-author="{{ note.uploaded_by.first_name|default:note.uploaded_by.username }}"
+                data-date="{{ note.created_at|timesince }} ago"
+                data-downloads="{{ note.downloads }}"
+                data-preview-url="{% url 'preview' note.id %}"
+                data-download-url="{% url 'download' note.id %}"
+                data-comment-count="{{ note.comment_count }}">
                 <div class="note-card-header">
                     <span class="note-subject-badge">{{ note.subject.icon }} {{ note.subject.name }}</span>
                     <span class="note-downloads">⬇️ {{ note.downloads }}</span>
@@ -99,32 +109,104 @@
                     <span class="note-author">By {{ note.uploaded_by.first_name }}</span>
                     <span class="note-date">{{ note.created_at|timesince }} ago</span>
                 </div>
-                <div class="note-card-actions">
-                    <a href="javascript:void(0)"
-                        onclick="openPreview('{% url 'preview' note.id %}', '{{ note.title|escapejs }}')"
-                        class="btn btn-outline btn-sm" id="preview-{{ note.id }}">👁️ View</a>
-                    <a href="{% url 'download' note.id %}" class="btn btn-primary btn-sm" id="download-{{ note.id }}">⬇️
-                        Download</a>
-                    {% if user.is_authenticated %}
-                    {% if note.id in bookmarked_ids %}
-                    <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-bookmark-active btn-sm"
-                        id="bookmark-{{ note.id }}" title="Remove Bookmark">🔖 Bookmarked</a>
+            </div>
+
+            <!-- Hidden comments data for this note -->
+            <div class="note-comments-data" id="comments-data-{{ note.id }}" style="display:none;">
+                {% if user.is_authenticated %}
+                {% if note.id in bookmarked_ids %}
+                <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-bookmark-active btn-sm" title="Remove Bookmark">🔖 Bookmarked</a>
+                {% else %}
+                <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-outline btn-sm" title="Add Bookmark">🔖 Bookmark</a>
+                {% endif %}
+                {% endif %}
+                <div class="comment-section-inner">
+                    {% if note.comments.all %}
+                    <div class="comment-list">
+                        {% for comment in note.comments.all %}
+                        <div class="comment-item" id="comment-{{ comment.id }}">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ comment.user.first_name|default:comment.user.username }}</span>
+                                <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                                {% if comment.user == user %}
+                                <form method="POST" action="{% url 'delete_comment' comment.id %}" class="comment-delete-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="comment-delete-btn" title="Delete comment">✕</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <p class="comment-text">{{ comment.text }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
-                    <a href="{% url 'toggle_bookmark' note.id %}" class="btn btn-outline btn-sm"
-                        id="bookmark-{{ note.id }}" title="Add Bookmark">🔖 Bookmark</a>
+                    <p class="comment-empty">No comments yet. Be the first!</p>
                     {% endif %}
+
+                    {% if user.is_authenticated %}
+                    <form method="POST" action="{% url 'add_comment' note.id %}" class="comment-form">
+                        {% csrf_token %}
+                        <textarea name="text" class="form-input comment-input" placeholder="Write a comment..." rows="2" maxlength="500" required></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                    </form>
+                    {% else %}
+                    <p class="comment-login-hint"><a href="{% url 'login' %}">Log in</a> to comment.</p>
                     {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
+
+        <!-- Note Detail Modal -->
+        <div class="note-modal-overlay" id="note-modal-overlay" onclick="closeNoteModal(event)">
+            <div class="note-modal" id="note-modal" onclick="event.stopPropagation()">
+                <button class="note-modal-close" onclick="closeNoteModal()" title="Close">✕</button>
+
+                <div class="note-modal-header">
+                    <span class="note-subject-badge" id="modal-subject"></span>
+                    <span class="note-downloads" id="modal-downloads"></span>
+                </div>
+
+                <h2 class="note-modal-title" id="modal-title"></h2>
+
+                <div class="note-modal-meta">
+                    <span id="modal-author"></span>
+                    <span class="note-modal-dot">·</span>
+                    <span id="modal-date"></span>
+                    <span class="note-modal-dot">·</span>
+                    <span id="modal-branch"></span>
+                </div>
+
+                <div class="note-modal-desc" id="modal-desc"></div>
+
+                <div class="note-modal-actions" id="modal-actions">
+                    <a href="#" class="btn btn-outline btn-sm" id="modal-preview-btn" onclick="event.stopPropagation()">👁️ Preview</a>
+                    <a href="#" class="btn btn-primary btn-sm" id="modal-download-btn" onclick="event.stopPropagation()">⬇️ Download</a>
+                    <span id="modal-bookmark-slot"></span>
+                </div>
+
+                <div class="note-modal-comments" id="modal-comments">
+                    <h3 class="note-modal-comments-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        Comments <span id="modal-comment-count"></span>
+                    </h3>
+                    <div id="modal-comments-content"></div>
+                </div>
+            </div>
+        </div>
         {% else %}
         <div class="empty-state" id="empty-state">
             <div class="empty-icon">📭</div>
             <h3>No notes found</h3>
-            <p>{% if search_query %}No results for "{{ search_query }}". Try a different search term.{% elif
-                current_branch %}No notes uploaded for this branch yet. Be the first to share!{% else %}No notes
-                have been uploaded yet. Be the first to share!{% endif %}</p>
+            <p>
+                {% if search_query %}
+                    No results for "{{ search_query }}". Try a different search term.
+                {% elif current_branch %}
+                    No notes uploaded for this branch yet. Be the first to share!
+                {% else %}
+                    No notes have been uploaded yet. Be the first to share!
+                {% endif %}
+            </p>
             {% if user.is_authenticated %}
             <a href="{% url 'upload' %}" class="btn btn-primary">Upload First Note</a>
             {% endif %}
@@ -356,6 +438,176 @@
             right: 0;
         }
     }
+
+    /* ============================================
+       NOTE DETAIL MODAL
+       ============================================ */
+    .note-card-clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .note-card-clickable:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .note-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(6px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.25s ease;
+        padding: 24px;
+    }
+
+    .note-modal-overlay.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .note-modal {
+        background: var(--bg-card, #1a1a2e);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-xl);
+        max-width: 640px;
+        width: 100%;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 32px;
+        position: relative;
+        transform: translateY(20px) scale(0.97);
+        transition: transform 0.25s ease;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .note-modal-overlay.open .note-modal {
+        transform: translateY(0) scale(1);
+    }
+
+    .note-modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border: none;
+        color: var(--text-muted);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        z-index: 2;
+    }
+
+    .note-modal-close:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .note-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .note-modal-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        padding-right: 40px;
+    }
+
+    .note-modal-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .note-modal-dot {
+        color: var(--text-muted);
+        opacity: 0.4;
+    }
+
+    .note-modal-desc {
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-md);
+        white-space: pre-wrap;
+    }
+
+    .note-modal-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 20px;
+    }
+
+    .note-modal-comments-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .note-modal-comments .comment-list {
+        max-height: 250px;
+    }
+
+    /* Modal scrollbar */
+    .note-modal::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .note-modal::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .note-modal::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 3px;
+    }
+
+    @media (max-width: 600px) {
+        .note-modal {
+            padding: 20px;
+            max-height: 90vh;
+        }
+
+        .note-modal-title {
+            font-size: 18px;
+        }
+
+        .note-modal-overlay {
+            padding: 12px;
+        }
+    }
 </style>
 
 <script>
@@ -381,6 +633,60 @@
                 d.classList.remove('open');
             });
         }
+    });
+
+    // Note Detail Modal
+    function openNoteModal(card) {
+        const overlay = document.getElementById('note-modal-overlay');
+        const noteId = card.id.replace('note-', '');
+
+        // Populate modal from data attributes
+        document.getElementById('modal-title').textContent = card.dataset.title;
+        document.getElementById('modal-desc').textContent = card.dataset.description || 'No description provided.';
+        document.getElementById('modal-subject').textContent = card.dataset.subject;
+        document.getElementById('modal-downloads').innerHTML = '⬇️ ' + card.dataset.downloads;
+        document.getElementById('modal-author').textContent = 'By ' + card.dataset.author;
+        document.getElementById('modal-date').textContent = card.dataset.date;
+        document.getElementById('modal-branch').textContent = card.dataset.branch;
+        document.getElementById('modal-comment-count').textContent = '(' + card.dataset.commentCount + ')';
+
+        // Set action URLs
+        const previewBtn = document.getElementById('modal-preview-btn');
+        previewBtn.href = 'javascript:void(0)';
+        previewBtn.onclick = function (e) {
+            e.stopPropagation();
+            openPreview(card.dataset.previewUrl, card.dataset.title);
+        };
+        document.getElementById('modal-download-btn').href = card.dataset.downloadUrl;
+
+        // Clone bookmark button
+        const bookmarkSlot = document.getElementById('modal-bookmark-slot');
+        const commentsData = document.getElementById('comments-data-' + noteId);
+        bookmarkSlot.innerHTML = '';
+        const bookmarkLink = commentsData.querySelector('a.btn');
+        if (bookmarkLink) {
+            bookmarkSlot.appendChild(bookmarkLink.cloneNode(true));
+        }
+
+        // Clone comments content
+        const commentsContent = document.getElementById('modal-comments-content');
+        const commentInner = commentsData.querySelector('.comment-section-inner');
+        commentsContent.innerHTML = commentInner ? commentInner.innerHTML : '';
+
+        // Show modal
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeNoteModal(e) {
+        if (e && e.target && e.target !== document.getElementById('note-modal-overlay')) return;
+        document.getElementById('note-modal-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // Close on ESC key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeNoteModal();
     });
 </script>
 {% endblock %}

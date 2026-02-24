@@ -51,6 +51,7 @@
                                 to browse</span></p>
                         <p class="file-upload-hint">Supports PDF, DOC, DOCX, PPT, PPTX, TXT, JPG, PNG</p>
                     </div>
+                    <button type="button" class="file-remove-btn" id="file-remove-btn" title="Remove file">✕</button>
                     {{ form.file }}
                 </div>
                 {% if form.file.errors %}
@@ -67,6 +68,40 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
+    }
+
+    .file-upload-area {
+        position: relative;
+    }
+
+    .file-remove-btn {
+        display: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        z-index: 5;
+        transition: all 0.2s ease;
+        display: none;
+    }
+
+    .file-remove-btn:hover {
+        background: rgba(239, 68, 68, 0.3);
+        transform: scale(1.1);
+    }
+
+    .file-upload-area.has-file .file-remove-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     @media (max-width: 600px) {
@@ -127,11 +162,55 @@
     });
     fileInput.addEventListener('change', updateFileName);
 
+    const removeBtn = document.getElementById('file-remove-btn');
+
     function updateFileName() {
         if (fileInput.files.length > 0) {
             uploadText.textContent = fileInput.files[0].name;
             uploadArea.classList.add('has-file');
         }
     }
+
+    removeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        fileInput.value = '';
+        uploadText.innerHTML = 'Drag & drop your file here, or <span class="file-upload-link">click to browse</span>';
+        uploadArea.classList.remove('has-file');
+    });
+
+    // --- Client-side validation ---
+    function showErr(input, msg) {
+        const old = input.closest('.form-group').querySelector('.form-error');
+        if (old) old.remove();
+        const span = document.createElement('span');
+        span.className = 'form-error';
+        span.textContent = msg;
+        input.closest('.form-group').appendChild(span);
+    }
+
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        this.querySelectorAll('.form-error').forEach(el => el.remove());
+        let valid = true;
+
+        const title = document.getElementById('note-title');
+        if (title.value.trim().length < 3) {
+            showErr(title, 'Title must be at least 3 characters.'); valid = false;
+        }
+
+        if (!branchSelect.value) {
+            showErr(branchSelect, 'Please select a branch.'); valid = false;
+        }
+        if (!subjectSelect.value) {
+            showErr(subjectSelect, 'Please select a subject.'); valid = false;
+        }
+
+        if (!fileInput.files.length) {
+            showErr(fileInput, 'Please attach a file.'); valid = false;
+        } else if (fileInput.files[0].size > 10 * 1024 * 1024) {
+            showErr(fileInput, 'File is too large. Max size is 10 MB.'); valid = false;
+        }
+
+        if (!valid) e.preventDefault();
+    });
 </script>
 {% endblock %}

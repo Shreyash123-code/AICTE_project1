@@ -14,4 +14,6 @@ urlpatterns = [
     path('bookmark/<int:note_id>/', views.toggle_bookmark, name='toggle_bookmark'),
     path('delete/<int:note_id>/', views.delete_note, name='delete_note'),
     path('api/subjects/<int:branch_id>/', views.get_subjects, name='get_subjects'),
+    path('comment/<int:note_id>/', views.add_comment, name='add_comment'),
+    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ]

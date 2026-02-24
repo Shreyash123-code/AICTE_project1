@@ -16,9 +16,6 @@ venv/
 env/
 .env
 
-# Django
-*.sqlite3
-/media/
 
 # IDE
 .vscode/
@@ -33,3 +30,4 @@ desktop.ini
 
 # Logs
 *.log
+

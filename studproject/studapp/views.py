@@ -5,8 +5,8 @@ from django.contrib import messages
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
-from .models import Note, Subject, Branch, Bookmark
-from .forms import SignUpForm, NoteUploadForm, UserUpdateForm
+from .models import Note, Subject, Branch, Bookmark, Comment
+from .forms import SignUpForm, NoteUploadForm, UserUpdateForm, CommentForm
 
 
 def home(request):
@@ -74,7 +74,7 @@ def logout_view(request):
 
 def browse_notes(request):
     """Browse notes with optional filters and search."""
-    notes = Note.objects.select_related('subject', 'subject__branch', 'uploaded_by')
+    notes = Note.objects.select_related('subject', 'subject__branch', 'uploaded_by').prefetch_related('comments', 'comments__user').annotate(comment_count=Count('comments'))
     branches = Branch.objects.annotate(note_count=Count('subjects__notes'))
     subjects = Subject.objects.select_related('branch').annotate(note_count=Count('notes'))
 
@@ -249,3 +249,30 @@ def delete_note(request, note_id):
         note.delete()
         messages.success(request, 'Note deleted.')
     return redirect('dashboard')
+
+
+@login_required(login_url='login')
+def add_comment(request, note_id):
+    """Add a comment to a note."""
+    note = get_object_or_404(Note, id=note_id)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.note = note
+            comment.user = request.user
+            comment.save()
+            messages.success(request, 'Comment added!')
+    return redirect(request.META.get('HTTP_REFERER', 'browse'))
+
+
+@login_required(login_url='login')
+def delete_comment(request, comment_id):
+    """Delete a comment (only the author can delete)."""
+    comment = get_object_or_404(Comment, id=comment_id)
+    if comment.user != request.user:
+        messages.error(request, 'You can only delete your own comments.')
+    elif request.method == 'POST':
+        comment.delete()
+        messages.success(request, 'Comment deleted.')
+    return redirect(request.META.get('HTTP_REFERER', 'browse'))

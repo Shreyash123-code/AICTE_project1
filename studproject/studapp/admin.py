@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Branch, Subject, Note, Bookmark
+from .models import Branch, Subject, Note, Bookmark, Comment
 
 
 @admin.register(Branch)
@@ -26,3 +26,10 @@ class NoteAdmin(admin.ModelAdmin):
 class BookmarkAdmin(admin.ModelAdmin):
     list_display = ('user', 'note', 'created_at')
     list_filter = ('created_at',)
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'note', 'text', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('text', 'user__username')

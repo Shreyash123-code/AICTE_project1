@@ -140,8 +140,7 @@
                 {% for bookmark in user_bookmarks %}
                 <div class="note-card" id="bookmark-note-{{ bookmark.note.id }}">
                     <div class="note-card-header">
-                        <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name
-                            }}</span>
+                        <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name }}</span>
                         <span class="note-downloads">⬇️ {{ bookmark.note.downloads }}</span>
                     </div>
                     <h3 class="note-title">{{ bookmark.note.title }}</h3>
