@@ -1,33 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    birth_date = models.DateField(null=True, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-
-    def __str__(self):
-        return f"Profile for {self.user.username}"
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.get_or_create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
-    else:
-        Profile.objects.create(user=instance)
 
 
 class Branch(models.Model):
+    """Engineering branch (CSE, ECE, etc.)."""
     name = models.CharField(max_length=150, unique=True)
     icon = models.CharField(max_length=50, default='🎓')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,9 +17,10 @@ class Branch(models.Model):
 
 
 class Subject(models.Model):
+    """Subject within a branch."""
     name = models.CharField(max_length=100)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name='subjects', null=True, blank=True)
-    icon = models.CharField(max_length=50, default='📘')  # emoji icon
+    icon = models.CharField(max_length=50, default='📘')
     description = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,6 +32,7 @@ class Subject(models.Model):
 
 
 class Note(models.Model):
+    """An uploaded note file."""
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default='')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='notes')
@@ -72,6 +50,7 @@ class Note(models.Model):
 
 
 class Bookmark(models.Model):
+    """A user's bookmarked note."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
     note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='bookmarks')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -81,15 +60,3 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return f"{self.user.username} → {self.note.title}"
-
-
-class Download(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='downloads')
-    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='download_records')
-    downloaded_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-downloaded_at']
-
-    def __str__(self):
-        return f"{self.user.username} ⬇ {self.note.title}"

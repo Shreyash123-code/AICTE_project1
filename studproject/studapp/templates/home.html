@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Stud Safe — Share & Discover Student Notes{% endblock %}
+{% block title %}Stud Safe — Student Notes Sharing{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -15,15 +15,14 @@
         <div class="hero-content">
             <div class="hero-badge" id="hero-badge">
                 <span class="badge-dot"></span>
-                <span>Trusted by students everywhere</span>
+                <span>Built for students</span>
             </div>
             <h1 class="hero-title" id="hero-title">
                 Your Notes,<br>
                 <span class="gradient-text">Safe & Shared</span>
             </h1>
             <p class="hero-subtitle" id="hero-subtitle">
-                Upload your study notes, discover resources from fellow students, and ace your exams together. StudSafe
-                makes knowledge sharing effortless.
+                Upload your notes, find notes from other students, and study better together.
             </p>
             <div class="hero-actions" id="hero-actions">
                 {% if user.is_authenticated %}
@@ -31,7 +30,7 @@
                     <span>📤</span> Upload Notes
                 </a>
                 <a href="{% url 'browse' %}" class="btn btn-glass btn-lg" id="hero-browse-btn">
-                    Browse Library →
+                    Browse Notes →
                 </a>
                 {% else %}
                 <a href="{% url 'signup' %}" class="btn btn-primary btn-lg" id="hero-signup-btn">
@@ -164,8 +163,8 @@
     <div class="section-container">
         <div class="section-header">
             <span class="section-tag">Why StudSafe?</span>
-            <h2 class="section-title">Everything you need to <span class="gradient-text">study smarter</span></h2>
-            <p class="section-desc">A platform designed with students in mind. Simple, fast, and completely free.</p>
+            <h2 class="section-title">Everything you need to <span class="gradient-text">study better</span></h2>
+            <p class="section-desc">Simple, fast, and free for all students.</p>
         </div>
         <div class="features-grid" id="features-grid">
             <div class="feature-card" id="feature-upload">
@@ -173,42 +172,42 @@
                     <span class="feature-icon">📤</span>
                 </div>
                 <h3>Easy Upload</h3>
-                <p>Upload PDFs, docs, images, and more in seconds. Organize by subject for easy discovery.</p>
+                <p>Upload PDFs, docs, and images. Pick a subject and you're done.</p>
             </div>
             <div class="feature-card" id="feature-browse">
                 <div class="feature-icon-wrap">
                     <span class="feature-icon">🔍</span>
                 </div>
-                <h3>Smart Search</h3>
-                <p>Find exactly what you need with powerful search and subject filters. No digging required.</p>
+                <h3>Search & Filter</h3>
+                <p>Search by title, subject, or branch. Find what you need quickly.</p>
             </div>
             <div class="feature-card" id="feature-download">
                 <div class="feature-icon-wrap">
                     <span class="feature-icon">⬇️</span>
                 </div>
                 <h3>Instant Download</h3>
-                <p>Download any notes with a single click. Access study materials anytime, anywhere.</p>
+                <p>Download any notes with one click. Use them anytime, anywhere.</p>
             </div>
             <div class="feature-card" id="feature-bookmark">
                 <div class="feature-icon-wrap">
                     <span class="feature-icon">🔖</span>
                 </div>
                 <h3>Bookmarks</h3>
-                <p>Save your favorite notes for later. Build your personal study library effortlessly.</p>
+                <p>Save notes you like and find them easily later.</p>
             </div>
             <div class="feature-card" id="feature-subjects">
                 <div class="feature-icon-wrap">
                     <span class="feature-icon">📚</span>
                 </div>
                 <h3>Engineering Branches</h3>
-                <p>Notes organized by branch — CSE, ECE, Mechanical, Electrical, Civil, IT, AI&DS, and more.</p>
+                <p>Notes sorted by branch — CSE, Mechanical, IT, Civil, and more.</p>
             </div>
             <div class="feature-card" id="feature-free">
                 <div class="feature-icon-wrap">
                     <span class="feature-icon">🎓</span>
                 </div>
                 <h3>100% Free</h3>
-                <p>No subscriptions, no paywalls. Knowledge should be accessible to every student.</p>
+                <p>No subscriptions, no fees. Free for every student.</p>
             </div>
         </div>
     </div>

@@ -2,46 +2,48 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, JsonResponse, HttpResponse
 from django.db.models import Q, Count
-from .models import Note, Subject, Branch, Bookmark, Download
-from .forms import SignUpForm, NoteUploadForm, UserUpdateForm, ProfileUpdateForm
+from django.core.paginator import Paginator
+from .models import Note, Subject, Branch, Bookmark
+from .forms import SignUpForm, NoteUploadForm, UserUpdateForm
 
 
 def home(request):
-    """Landing page with hero, features, and recent notes."""
+    """Home page."""
     recent_notes = Note.objects.select_related('subject', 'subject__branch', 'uploaded_by')[:6]
-    branches = Branch.objects.prefetch_related('subjects').annotate(note_count=Count('subjects__notes'))
-    total_notes = Note.objects.count()
-    total_branches = Branch.objects.count()
+    branches = Branch.objects.annotate(note_count=Count('subjects__notes'))
 
-    # Featured subjects for hero cards (use simple keys for template dot access)
+    # Get IDs for the four featured FE subjects
     featured_subjects = {}
-    for key, name in [('math', 'Engineering Mathematics-I'), ('mechanics', 'Engineering Mechanics'), ('electrical', 'Basic Electrical Engineering'), ('chemistry', 'Engineering Chemistry')]:
+    subject_map = {
+        'math': 'Engineering Mathematics-I',
+        'mechanics': 'Engineering Mechanics',
+        'electrical': 'Basic Electrical Engineering',
+        'chemistry': 'Engineering Chemistry',
+    }
+    for key, name in subject_map.items():
         subj = Subject.objects.filter(name=name).first()
         if subj:
             featured_subjects[key] = subj.id
 
-    context = {
+    return render(request, 'home.html', {
         'recent_notes': recent_notes,
         'branches': branches,
-        'total_notes': total_notes,
-        'total_branches': total_branches,
+        'total_notes': Note.objects.count(),
+        'total_branches': Branch.objects.count(),
         'featured_subjects': featured_subjects,
-    }
-    return render(request, 'home.html', context)
+    })
 
 
 def signup_view(request):
-    """User registration page."""
-    if request.user.is_authenticated:
-        return redirect('home')
+    """Sign up a new user."""
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f'Welcome to Stud Safe, {user.first_name}! 🎉')
+            messages.success(request, f'Welcome, {user.first_name}! Your account is ready.')
             return redirect('home')
     else:
         form = SignUpForm()
@@ -49,86 +51,72 @@ def signup_view(request):
 
 
 def login_view(request):
-    """User login page."""
-    if request.user.is_authenticated:
-        return redirect('home')
+    """Log in a user."""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me')
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        if user:
             login(request, user)
-            
-            if remember_me:
-                request.session.set_expiry(2592000)  # 30 days in seconds
-            else:
-                request.session.set_expiry(0)  # Browser close
-                
-            messages.success(request, f'Welcome back, {user.first_name}! 👋')
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
+            messages.success(request, f'Welcome back, {user.first_name}!')
+            return redirect('home')
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Wrong username or password.')
     return render(request, 'login.html')
 
 
 def logout_view(request):
-    """Log out the user."""
+    """Log out."""
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('home')
 
 
 def browse_notes(request):
-    """Browse and search notes, optionally filtered by branch and subject."""
+    """Browse notes with optional filters and search."""
     notes = Note.objects.select_related('subject', 'subject__branch', 'uploaded_by')
-    branches = Branch.objects.prefetch_related('subjects').annotate(note_count=Count('subjects__notes'))
+    branches = Branch.objects.annotate(note_count=Count('subjects__notes'))
     subjects = Subject.objects.select_related('branch').annotate(note_count=Count('notes'))
 
-    # Filter by branch
     branch_id = request.GET.get('branch')
+    subject_id = request.GET.get('subject')
+    query = request.GET.get('q', '')
+
     if branch_id:
         notes = notes.filter(subject__branch_id=branch_id)
         subjects = subjects.filter(branch_id=branch_id)
-
-    # Filter by subject
-    subject_id = request.GET.get('subject')
     if subject_id:
         notes = notes.filter(subject_id=subject_id)
-
-    # Search
-    query = request.GET.get('q', '')
     if query:
         notes = notes.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(subject__name__icontains=query) |
-            Q(subject__branch__name__icontains=query)
+            Q(title__icontains=query) | Q(description__icontains=query) |
+            Q(subject__name__icontains=query) | Q(subject__branch__name__icontains=query)
         )
 
-    # Get bookmarked note IDs for the current user
+    # Pagination — 12 per page
+    page_obj = Paginator(notes, 12).get_page(request.GET.get('page'))
+
+    # Bookmarks for current user
     bookmarked_ids = []
     if request.user.is_authenticated:
         bookmarked_ids = list(Bookmark.objects.filter(user=request.user).values_list('note_id', flat=True))
 
-    context = {
-        'notes': notes,
+    return render(request, 'browse.html', {
+        'notes': page_obj,
+        'page_obj': page_obj,
         'branches': branches,
         'subjects': subjects,
         'current_branch': branch_id,
         'current_subject': subject_id,
         'search_query': query,
         'bookmarked_ids': bookmarked_ids,
-    }
-    return render(request, 'browse.html', context)
+    })
 
 
 def get_subjects(request, branch_id):
-    """Return subjects for a given branch as JSON (for AJAX)."""
-    subjects = Subject.objects.filter(branch_id=branch_id).order_by('name')
-    data = [{"id": s.id, "name": s.name} for s in subjects]
-    return JsonResponse(data, safe=False)
+    """Return subjects for a branch (JSON, used by upload form)."""
+    subjects = Subject.objects.filter(branch_id=branch_id).values('id', 'name', 'icon')
+    return JsonResponse(list(subjects), safe=False)
 
 
 @login_required(login_url='login')
@@ -140,8 +128,8 @@ def upload_note(request):
             note = form.save(commit=False)
             note.uploaded_by = request.user
             note.save()
-            messages.success(request, 'Your notes have been uploaded successfully! 📚')
-            return redirect('dashboard')
+            messages.success(request, 'Note uploaded!')
+            return redirect('browse')
     else:
         form = NoteUploadForm()
     return render(request, 'upload.html', {'form': form})
@@ -149,198 +137,115 @@ def upload_note(request):
 
 @login_required(login_url='login')
 def download_note(request, note_id):
-    """Download a note file and increment download count."""
+    """Download a note and count it."""
     note = get_object_or_404(Note, id=note_id)
-    
     if not note.file:
-        messages.error(request, 'This note has no file attached.')
+        messages.error(request, 'No file attached to this note.')
         return redirect('browse')
-        
     try:
-        response = FileResponse(note.file.open('rb'), as_attachment=True, filename=note.file.name.split('/')[-1])
+        filename = note.file.name.split('/')[-1]
+        response = FileResponse(note.file.open('rb'), as_attachment=True, filename=filename)
         note.downloads += 1
         note.save(update_fields=['downloads'])
-        # Record who downloaded it
-        Download.objects.create(user=request.user, note=note)
         return response
     except FileNotFoundError:
-        messages.error(request, 'The requested file could not be found on the server.')
+        messages.error(request, 'File not found on server.')
         return redirect('browse')
 
 
 @login_required(login_url='login')
 def preview_note(request, note_id):
-    """Preview a note file in the browser with an HTML wrapper for certain types."""
+    """Preview a note file in the browser."""
     note = get_object_or_404(Note, id=note_id)
-    
     if not note.file:
-        messages.error(request, 'This note has no file attached.')
+        messages.error(request, 'No file attached.')
         return redirect('browse')
-        
-    file_url = note.file.url
-    extension = note.file.name.split('.')[-1].lower()
-    
-    # Handle images
-    if extension in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
-        html_content = f"""
-        <html>
-            <head>
-                <style>
-                    body {{ margin:0; display:flex; justify-content:center; align-items:center; background:#0f172a; height:100vh; overflow:hidden; user-select:none; -webkit-user-select:none; }}
-                    img {{ max-width:100%; max-height:100%; object-fit:contain; pointer-events:none; -webkit-user-drag:none; }}
-                </style>
-            </head>
-            <body oncontextmenu="return false;">
-                <img src="{file_url}">
-            </body>
-        </html>
-        """
-        from django.http import HttpResponse
-        return HttpResponse(html_content)
-    
-    # Handle text files
-    if extension in ['txt', 'py', 'js', 'html', 'css']:
+
+    ext = note.file.name.rsplit('.', 1)[-1].lower()
+    url = note.file.url
+
+    # Images — show centered
+    if ext in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
+        return HttpResponse(f'''
+        <body style="margin:0;display:flex;justify-content:center;align-items:center;background:#0f172a;height:100vh" oncontextmenu="return false">
+            <img src="{url}" style="max-width:100%;max-height:100%;object-fit:contain">
+        </body>''')
+
+    # Text files — show as preformatted text
+    if ext in ('txt', 'py', 'js', 'html', 'css'):
         try:
             content = note.file.read().decode('utf-8')
-            html_content = f"""
-            <html>
-                <head>
-                    <style>
-                        body {{ margin:0; padding:20px; background:#0f172a; color:#f8fafc; font-family:monospace; line-height:1.5; user-select:none; -webkit-user-select:none; }}
-                        pre {{ white-space:pre-wrap; word-break:break-all; pointer-events:none; }}
-                    </style>
-                </head>
-                <body oncontextmenu="return false;">
-                    <pre>{content}</pre>
-                </body>
-            </html>
-            """
-            from django.http import HttpResponse
-            return HttpResponse(html_content)
-        except:
-            pass 
-            
-    # Handle PDFs
-    if extension == 'pdf':
-        html_content = f"""
-        <html>
-            <head>
-                <style>
-                    body {{ margin:0; padding:0; background:#0f172a; overflow:hidden; }}
-                    .pdf-container {{
-                        position: relative;
-                        width: 100%;
-                        height: 100vh;
-                        background: #0f172a;
-                    }}
-                    /* Shift iframe up to hide browser PDF toolbar */
-                    iframe {{
-                        position: absolute;
-                        top: -50px; 
-                        left: 0;
-                        width: 100%;
-                        height: calc(100vh + 50px);
-                        border: none;
-                    }}
-                    /* Transparent blocker only over the top hidden area to prevent interaction with the toolbar */
-                    .top-blocker {{
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 60px;
-                        background: transparent;
-                        z-index: 10;
-                    }}
-                </style>
-            </head>
-            <body oncontextmenu="return false;">
-                <div class="pdf-container">
-                    <div class="top-blocker"></div>
-                    <iframe src="{file_url}#toolbar=0&navpanes=0"></iframe>
-                </div>
-            </body>
-        </html>
-        """
-        from django.http import HttpResponse
-        return HttpResponse(html_content)
-            
+            import html
+            content = html.escape(content)
+            return HttpResponse(f'''
+            <body style="margin:0;padding:20px;background:#0f172a;color:#f8fafc;font-family:monospace" oncontextmenu="return false">
+                <pre>{content}</pre>
+            </body>''')
+        except Exception:
+            pass
+
+    # PDFs — embed in iframe
+    if ext == 'pdf':
+        return HttpResponse(f'''
+        <body style="margin:0;background:#0f172a;overflow:hidden" oncontextmenu="return false">
+            <iframe src="{url}#toolbar=0&navpanes=0" style="width:100%;height:100vh;border:none"></iframe>
+        </body>''')
+
+    # Fallback — serve the raw file
     try:
-        # Fallback for other files
         return FileResponse(note.file.open('rb'), as_attachment=False)
     except FileNotFoundError:
-        messages.error(request, 'The requested file could not be found on the server.')
+        messages.error(request, 'File not found.')
         return redirect('browse')
 
 
 @login_required(login_url='login')
 def dashboard(request):
-    """User dashboard showing their profile, uploaded notes, and bookmarks."""
+    """User dashboard."""
     user_notes = Note.objects.filter(uploaded_by=request.user).select_related('subject')
-    user_bookmarks = Bookmark.objects.filter(user=request.user).select_related('note', 'note__subject', 'note__uploaded_by')
-    
-    # Track the user's own downloads (files they downloaded)
-    user_downloads = Download.objects.filter(user=request.user).select_related('note', 'note__subject')
-    total_downloads = user_downloads.count()
-    
+    user_bookmarks = Bookmark.objects.filter(user=request.user).select_related('note', 'note__subject')
+
     if request.method == 'POST' and 'update_profile' in request.POST:
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        # Ensure profile exists
-        from .models import Profile
-        profile, created = Profile.objects.get_or_create(user=request.user)
-        p_form = ProfileUpdateForm(request.POST, instance=profile)
-        
-        if u_form.is_valid() and p_form.is_valid():
+        if u_form.is_valid():
             u_form.save()
-            p_form.save()
-            messages.success(request, 'Your profile has been updated! ✨')
+            messages.success(request, 'Profile updated!')
             return redirect('dashboard')
     else:
         u_form = UserUpdateForm(instance=request.user)
-        # Ensure profile exists
-        from .models import Profile
-        profile, created = Profile.objects.get_or_create(user=request.user)
-        p_form = ProfileUpdateForm(instance=profile)
-    
-    context = {
+
+    return render(request, 'dashboard.html', {
         'user_notes': user_notes,
         'user_bookmarks': user_bookmarks,
-        'total_downloads': total_downloads,
-        'user_downloads': user_downloads,
         'u_form': u_form,
-        'p_form': p_form,
-    }
-    return render(request, 'dashboard.html', context)
+    })
 
 
 @login_required(login_url='login')
 def toggle_bookmark(request, note_id):
-    """Toggle bookmark on a note."""
+    """Add or remove a bookmark."""
     note = get_object_or_404(Note, id=note_id)
     bookmark, created = Bookmark.objects.get_or_create(user=request.user, note=note)
     if not created:
         bookmark.delete()
         messages.info(request, 'Bookmark removed.')
     else:
-        messages.success(request, 'Note bookmarked! 🔖')
+        messages.success(request, 'Note bookmarked!')
     return redirect(request.META.get('HTTP_REFERER', 'browse'))
 
 
 @login_required(login_url='login')
 def delete_note(request, note_id):
-    """Delete a note — only the uploader can delete their own note."""
+    """Delete a note (only the uploader can delete)."""
     note = get_object_or_404(Note, id=note_id)
-
-    # Only the uploader can delete
     if note.uploaded_by != request.user:
-        messages.error(request, 'You can only delete your own notes.')
+        messages.error(request, "You can only delete your own notes.")
         return redirect('dashboard')
-
     if request.method == 'POST':
-        # Delete the file from storage
         if note.file:
-            note.file.delete(save=False)
+            import os
+            if os.path.isfile(note.file.path):
+                os.remove(note.file.path)
         note.delete()
-        messages.success(request, 'Note deleted successfully! 🗑️')
-
+        messages.success(request, 'Note deleted.')
     return redirect('dashboard')

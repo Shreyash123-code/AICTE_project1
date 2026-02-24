@@ -1769,3 +1769,137 @@ img {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ============================================
+   HERO SEARCH BAR
+   ============================================ */
+.hero-search {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    max-width: 560px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    padding: 6px 6px 6px 20px;
+    margin-top: 24px;
+    animation: fadeInUp 0.6s var(--ease-smooth) 0.35s both;
+    transition: all 0.3s var(--ease-smooth);
+}
+
+.hero-search:focus-within {
+    border-color: var(--primary-400);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-search-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.hero-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.hero-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+#hero-search-btn {
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    padding: 10px 24px;
+}
+
+@media (max-width: 768px) {
+    .hero-search {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 1024px) {
+    .hero-search {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+}
+
+.pagination-pages {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    text-decoration: none;
+    transition: all 0.2s var(--ease-smooth);
+    cursor: pointer;
+}
+
+.pagination-btn:hover {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: var(--border-active);
+    color: var(--primary-300);
+}
+
+.pagination-btn.active {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: white;
+    cursor: default;
+}
+
+@media (max-width: 480px) {
+    .pagination {
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   SUBJECT NOTE COUNT (browse dropdown)
+   ============================================ */
+.subject-note-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 4px;
+    opacity: 0.7;
+}

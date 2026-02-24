@@ -9,7 +9,7 @@
         <div class="browse-header" id="browse-header">
             <div>
                 <h1 class="page-title">Browse <span class="gradient-text">Notes</span></h1>
-                <p class="page-subtitle">Discover study materials shared by students like you.</p>
+                <p class="page-subtitle">Find notes shared by other students.</p>
             </div>
             {% if user.is_authenticated %}
             <a href="{% url 'upload' %}" class="btn btn-primary" id="browse-upload-btn">📤 Upload Notes</a>
@@ -52,7 +52,8 @@
                             <a href="{% url 'browse' %}?branch={{ branch.id }}&subject={{ subject.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
                                 class="dropdown-item {% if current_subject == subject.id|stringformat:'d' %}active{% endif %}"
                                 id="dropdown-subject-{{ subject.id }}">
-                                {{ subject.icon }} {{ subject.name }}
+                                {{ subject.icon }} {{ subject.name }} <span class="subject-note-count">({{
+                                    subject.note_count }})</span>
                             </a>
                             {% endfor %}
                         </div>
@@ -126,6 +127,30 @@
                 have been uploaded yet. Be the first to share!{% endif %}</p>
             {% if user.is_authenticated %}
             <a href="{% url 'upload' %}" class="btn btn-primary">Upload First Note</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination" id="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if current_branch %}&branch={{ current_branch }}{% endif %}{% if current_subject %}&subject={{ current_subject }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                class="pagination-btn" id="page-prev">← Previous</a>
+            {% endif %}
+            <div class="pagination-pages">
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="pagination-btn active" id="page-{{ num }}">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                    href="?page={{ num }}{% if current_branch %}&branch={{ current_branch }}{% endif %}{% if current_subject %}&subject={{ current_subject }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="pagination-btn" id="page-{{ num }}">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+            </div>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if current_branch %}&branch={{ current_branch }}{% endif %}{% if current_subject %}&subject={{ current_subject }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+                class="pagination-btn" id="page-next">Next →</a>
             {% endif %}
         </div>
         {% endif %}

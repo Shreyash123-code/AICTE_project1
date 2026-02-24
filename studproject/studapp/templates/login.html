@@ -3,24 +3,17 @@
 {% block title %}Login — Stud Safe{% endblock %}
 
 {% block content %}
-<script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.58/build/spline-viewer.js"></script>
-
 <section class="auth-section" id="login-section">
     <div class="auth-container">
         <div class="auth-visual">
-            <!-- 3D Box filling the visual container top to bottom -->
-            <div class="spline-container">
-                <spline-viewer id="robot-viewer" url="https://prod.spline.design/jfpIHh5THBvS-0vK/scene.splinecode"
-                    events-target="global" loading-background="transparent" background="transparent"></spline-viewer>
-            </div>
             <div class="auth-visual-content">
                 <h2>Welcome back to <span class="gradient-text">StudSafe</span></h2>
-                <p>Sign in to access your dashboard, manage your notes, and continue learning with the community.</p>
+                <p>Sign in to see your notes, bookmarks, and downloads.</p>
                 <div class="auth-visual-features">
-                    <div class="avf-item"><span>📚</span> Access your uploaded notes</div>
-                    <div class="avf-item"><span>🔖</span> View your bookmarks</div>
-                    <div class="avf-item"><span>⬇️</span> Download study materials</div>
-                    <div class="avf-item"><span>📊</span> Check your stats</div>
+                    <div class="avf-item"><span>📚</span> Your uploaded notes</div>
+                    <div class="avf-item"><span>🔖</span> Your bookmarks</div>
+                    <div class="avf-item"><span>⬇️</span> Download notes</div>
+                    <div class="avf-item"><span>📊</span> Your stats</div>
                 </div>
             </div>
         </div>
@@ -84,36 +77,6 @@
         width: 100%;
     }
 
-    /* Sharp Fixed 3D Viewport Styling */
-    .spline-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-        pointer-events: auto;
-        background: transparent;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    #robot-viewer {
-        /* Adjusted width/height for better resolution without over-scaling */
-        width: 3500px;
-        height: 2500px;
-        /* Reduced scale factor to avoid pixelation/blur */
-        transform: scale(2.5) translateZ(0);
-        background: transparent;
-        flex-shrink: 0;
-        margin-top: 150px;
-        /* Improving rendering quality */
-        image-rendering: auto;
-        -webkit-font-smoothing: antialiased;
-    }
-
     .auth-visual {
         position: relative;
         overflow: hidden;
@@ -121,10 +84,9 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        min-height: 750px;
+        min-height: 550px;
         border-radius: var(--radius-xl);
-        background: var(--bg-primary);
-        /* Use solid color background to reduce visual noise */
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(16, 185, 129, 0.1) 50%, rgba(59, 130, 246, 0.12) 100%);
         border: 1px solid var(--border-subtle);
         padding: 40px;
     }
@@ -132,14 +94,12 @@
     .auth-visual-content {
         position: relative;
         z-index: 2;
-        /* Reduced blur from 35px to 12px to make it clear and sharp */
         background: rgba(15, 23, 42, 0.65);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 45px;
         border-radius: var(--radius-lg);
         border: 1px solid rgba(255, 255, 255, 0.15);
-        pointer-events: none;
         width: 100%;
         max-width: 500px;
         text-align: center;
@@ -166,34 +126,9 @@
         }
 
         .auth-visual {
-            min-height: 550px;
+            min-height: 400px;
             padding: 30px;
-        }
-
-        #robot-viewer {
-            width: 2000px;
-            height: 1800px;
-            transform: scale(1.8);
         }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const passwordInput = document.getElementById('login-password');
-        const splineViewer = document.getElementById('robot-viewer');
-
-        passwordInput.addEventListener('focus', () => {
-            const events = ['look_away', 'hide_eyes', 'cover_eyes', 'hide', 'Close Eyes', 'Cover'];
-            events.forEach(event => splineViewer.emitEvent(event, 'base'));
-            events.forEach(event => splineViewer.emitEvent(event, 'Robot'));
-        });
-
-        passwordInput.addEventListener('blur', () => {
-            const events = ['look_back', 'show_eyes', 'uncover_eyes', 'show', 'Open Eyes', 'Uncover'];
-            events.forEach(event => splineViewer.emitEvent(event, 'base'));
-            events.forEach(event => splineViewer.emitEvent(event, 'Robot'));
-        });
-    });
-</script>
 {% endblock %}

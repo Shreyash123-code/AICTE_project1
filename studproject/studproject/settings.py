@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=4f1%lsbl7fsh0g%-3j3s3&=30_#+j&bj(t!!vaiol=7-7sa#k'
+# In production, set the DJANGO_SECRET_KEY environment variable.
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-=4f1%lsbl7fsh0g%-3j3s3&=30_#+j&bj(t!!vaiol=7-7sa#k'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -62,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'studapp.context_processors.branches_context',
             ],
         },
     },
@@ -135,3 +141,6 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Email backend (console for development — prints reset links to terminal)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Upload limits
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB

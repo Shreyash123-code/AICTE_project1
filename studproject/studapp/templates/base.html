@@ -5,8 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Stud Safe — The ultimate student notes sharing platform. Upload, browse, and download notes organized by subject.">
+    <meta name="description" content="Stud Safe — Upload, browse, and download student notes for free.">
     <title>{% block title %}Stud Safe{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,8 +74,7 @@
                         <span class="logo-icon">🛡️</span>
                         <span class="logo-text">Stud<span class="logo-accent">Safe</span></span>
                     </div>
-                    <p class="footer-desc">Your safe space for sharing and discovering quality study notes. Built by
-                        students, for students.</p>
+                    <p class="footer-desc">Share and find student notes for free. Built by students, for students.</p>
                 </div>
                 <div class="footer-links-group">
                     <h4>Quick Links</h4>
@@ -91,11 +89,11 @@
                     {% endif %}
                 </div>
                 <div class="footer-links-group">
-                    <h4>Subjects</h4>
+                    <h4>Branches</h4>
                     <a href="{% url 'browse' %}">All Notes</a>
-                    <a href="{% url 'browse' %}?subject=1">Mathematics</a>
-                    <a href="{% url 'browse' %}?subject=2">Science</a>
-                    <a href="{% url 'browse' %}?subject=3">English</a>
+                    {% for branch in branches %}
+                    <a href="{% url 'browse' %}?branch={{ branch.id }}">{{ branch.icon }} {{ branch.name }}</a>
+                    {% endfor %}
                 </div>
             </div>
             <div class="footer-bottom">
