@@ -14,11 +14,20 @@ def home(request):
     branches = Branch.objects.prefetch_related('subjects').annotate(note_count=Count('subjects__notes'))
     total_notes = Note.objects.count()
     total_branches = Branch.objects.count()
+
+    # Featured subjects for hero cards (use simple keys for template dot access)
+    featured_subjects = {}
+    for key, name in [('math', 'Engineering Mathematics-I'), ('mechanics', 'Engineering Mechanics'), ('electrical', 'Basic Electrical Engineering'), ('chemistry', 'Engineering Chemistry')]:
+        subj = Subject.objects.filter(name=name).first()
+        if subj:
+            featured_subjects[key] = subj.id
+
     context = {
         'recent_notes': recent_notes,
         'branches': branches,
         'total_notes': total_notes,
         'total_branches': total_branches,
+        'featured_subjects': featured_subjects,
     }
     return render(request, 'home.html', context)
 

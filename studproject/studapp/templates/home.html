@@ -60,101 +60,101 @@
             </div>
         </div>
         <div class="hero-visual" id="hero-visual">
-            <!-- Circuit Board Card -->
-            <div class="floating-card card-1">
+            <!-- Engineering Mathematics-I Card -->
+            <a href="{% url 'browse' %}?subject={{ featured_subjects.math }}" class="floating-card card-1"
+                style="text-decoration:none;color:inherit;">
                 <div class="fc-icon-wrap">
                     <svg class="eng-svg" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="30" y="15" width="20" height="30" rx="2" stroke="#7c3aed" stroke-width="1.5"
-                            fill="rgba(124,58,237,0.1)" />
-                        <line x1="0" y1="25" x2="30" y2="25" stroke="#7c3aed" stroke-width="1.2" />
-                        <line x1="0" y1="35" x2="30" y2="35" stroke="#7c3aed" stroke-width="1.2" />
-                        <line x1="50" y1="25" x2="80" y2="25" stroke="#7c3aed" stroke-width="1.2" />
-                        <line x1="50" y1="35" x2="80" y2="35" stroke="#7c3aed" stroke-width="1.2" />
-                        <circle cx="10" cy="25" r="3" fill="#7c3aed" opacity="0.6" />
-                        <circle cx="70" cy="35" r="3" fill="#7c3aed" opacity="0.6" />
-                        <line x1="40" y1="0" x2="40" y2="15" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 2" />
-                        <line x1="40" y1="45" x2="40" y2="60" stroke="#a78bfa" stroke-width="1"
-                            stroke-dasharray="3 2" />
-                        <text x="40" y="32" text-anchor="middle" fill="#a78bfa" font-size="7"
-                            font-family="monospace">IC</text>
+                        <text x="10" y="22" fill="#7c3aed" font-size="14" font-family="serif" opacity="0.9">∫</text>
+                        <text x="28" y="20" fill="#a78bfa" font-size="10" font-family="serif" opacity="0.8">dx</text>
+                        <text x="50" y="18" fill="#7c3aed" font-size="12" font-family="serif" opacity="0.7">Σ</text>
+                        <text x="15" y="42" fill="#a78bfa" font-size="10" font-family="serif" opacity="0.8">dy/dx</text>
+                        <text x="50" y="40" fill="#7c3aed" font-size="11" font-family="serif" opacity="0.7">∞</text>
+                        <line x1="5" y1="50" x2="75" y2="50" stroke="#7c3aed" stroke-width="0.8" opacity="0.3" />
+                        <text x="10" y="56" fill="#a78bfa" font-size="6" font-family="monospace">f(x) =
+                            ax² + bx + c</text>
                     </svg>
                 </div>
-                <div class="fc-text">Circuit Design</div>
-                <div class="fc-sub">Electronics & VLSI</div>
-            </div>
+                <div class="fc-text">Engg. Math-I</div>
+                <div class="fc-sub">First Year</div>
+            </a>
 
-            <!-- Gear Mechanism Card -->
-            <div class="floating-card card-2">
+            <!-- Engineering Mechanics Card -->
+            <a href="{% url 'browse' %}?subject={{ featured_subjects.mechanics }}" class="floating-card card-2"
+                style="text-decoration:none;color:inherit;">
                 <div class="fc-icon-wrap">
                     <svg class="eng-svg" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="30" cy="30" r="14" stroke="#06b6d4" stroke-width="1.5"
-                            fill="rgba(6,182,212,0.08)" />
-                        <circle cx="30" cy="30" r="5" stroke="#06b6d4" stroke-width="1" fill="rgba(6,182,212,0.15)" />
-                        <path d="M30 16 L32 12 L28 12 Z" fill="#06b6d4" opacity="0.7" />
-                        <path d="M30 44 L32 48 L28 48 Z" fill="#06b6d4" opacity="0.7" />
-                        <path d="M16 30 L12 32 L12 28 Z" fill="#06b6d4" opacity="0.7" />
-                        <path d="M44 30 L48 32 L48 28 Z" fill="#06b6d4" opacity="0.7" />
-                        <circle cx="58" cy="22" r="9" stroke="#06b6d4" stroke-width="1.2" fill="rgba(6,182,212,0.06)" />
-                        <circle cx="58" cy="22" r="3" stroke="#06b6d4" stroke-width="0.8" fill="rgba(6,182,212,0.1)" />
-                        <path d="M58 13 L59.5 10.5 L56.5 10.5 Z" fill="#06b6d4" opacity="0.5" />
-                        <line x1="44" y1="30" x2="49" y2="25" stroke="#06b6d4" stroke-width="0.8"
-                            stroke-dasharray="2 2" />
+                        <!-- Lever / fulcrum -->
+                        <polygon points="40,45 35,55 45,55" fill="#06b6d4" opacity="0.6" />
+                        <line x1="10" y1="42" x2="70" y2="42" stroke="#06b6d4" stroke-width="2" />
+                        <!-- Force arrows -->
+                        <line x1="15" y1="42" x2="15" y2="22" stroke="#06b6d4" stroke-width="1.2" />
+                        <polygon points="15,22 12,28 18,28" fill="#06b6d4" opacity="0.8" />
+                        <line x1="65" y1="42" x2="65" y2="28" stroke="#06b6d4" stroke-width="1.2" />
+                        <polygon points="65,28 62,34 68,34" fill="#06b6d4" opacity="0.8" />
+                        <text x="12" y="18" fill="#06b6d4" font-size="7" font-family="serif" opacity="0.8">F₁</text>
+                        <text x="62" y="25" fill="#06b6d4" font-size="7" font-family="serif" opacity="0.8">F₂</text>
+                        <!-- Weight -->
+                        <rect x="58" y="42" width="14" height="10" rx="1" stroke="#06b6d4" stroke-width="1"
+                            fill="rgba(6,182,212,0.1)" />
+                        <text x="65" y="50" text-anchor="middle" fill="#06b6d4" font-size="6"
+                            font-family="monospace">mg</text>
                     </svg>
                 </div>
-                <div class="fc-text">Gear Systems</div>
-                <div class="fc-sub">Mechanical Engg.</div>
-            </div>
+                <div class="fc-text">Engg. Mechanics</div>
+                <div class="fc-sub">First Year</div>
+            </a>
 
-            <!-- Code/Algorithm Card -->
-            <div class="floating-card card-3">
+            <!-- Basic Electrical Engineering Card -->
+            <a href="{% url 'browse' %}?subject={{ featured_subjects.electrical }}" class="floating-card card-3"
+                style="text-decoration:none;color:inherit;">
                 <div class="fc-icon-wrap">
                     <svg class="eng-svg" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="5" y="2" width="70" height="56" rx="4" stroke="#10b981" stroke-width="1.2"
-                            fill="rgba(16,185,129,0.06)" />
-                        <line x1="5" y1="12" x2="75" y2="12" stroke="#10b981" stroke-width="0.8" opacity="0.4" />
-                        <circle cx="12" cy="7" r="2" fill="#ef4444" opacity="0.6" />
-                        <circle cx="18" cy="7" r="2" fill="#fbbf24" opacity="0.6" />
-                        <circle cx="24" cy="7" r="2" fill="#10b981" opacity="0.6" />
-                        <text x="12" y="23" fill="#10b981" font-size="6" font-family="monospace" opacity="0.9">def
-                            solve(n):</text>
-                        <text x="16" y="31" fill="#a78bfa" font-size="6" font-family="monospace" opacity="0.7">if n
-                            &lt;= 1:</text>
-                        <text x="20" y="39" fill="#06b6d4" font-size="6" font-family="monospace" opacity="0.7">return
-                            n</text>
-                        <text x="16" y="47" fill="#fbbf24" font-size="6" font-family="monospace" opacity="0.7">return
-                            f(n-1)</text>
-                        <rect x="60" y="18" width="10" height="3" rx="1" fill="#10b981" opacity="0.3" />
-                        <rect x="56" y="26" width="14" height="3" rx="1" fill="#10b981" opacity="0.2" />
+                        <!-- Lightning bolt -->
+                        <polygon points="38,5 28,30 38,30 32,55 52,25 42,25 48,5" fill="rgba(16,185,129,0.15)"
+                            stroke="#10b981" stroke-width="1.2" />
+                        <!-- Circuit lines -->
+                        <line x1="5" y1="30" x2="25" y2="30" stroke="#10b981" stroke-width="1" opacity="0.6" />
+                        <line x1="55" y1="30" x2="75" y2="30" stroke="#10b981" stroke-width="1" opacity="0.6" />
+                        <!-- Resistor zigzag -->
+                        <polyline points="5,45 12,45 14,40 18,50 22,40 26,50 28,45 35,45" stroke="#10b981"
+                            stroke-width="1" fill="none" opacity="0.5" />
+                        <!-- Labels -->
+                        <text x="60" y="45" fill="#10b981" font-size="7" font-family="serif" opacity="0.7">V=IR</text>
+                        <circle cx="10" cy="30" r="2" fill="#10b981" opacity="0.5" />
+                        <circle cx="70" cy="30" r="2" fill="#10b981" opacity="0.5" />
                     </svg>
                 </div>
-                <div class="fc-text">DSA & Code</div>
-                <div class="fc-sub">Computer Science</div>
-            </div>
+                <div class="fc-text">Basic Electrical</div>
+                <div class="fc-sub">First Year</div>
+            </a>
 
-            <!-- Structure/Bridge Card -->
-            <div class="floating-card card-4">
+            <!-- Engineering Chemistry Card -->
+            <a href="{% url 'browse' %}?subject={{ featured_subjects.chemistry }}" class="floating-card card-4"
+                style="text-decoration:none;color:inherit;">
                 <div class="fc-icon-wrap">
                     <svg class="eng-svg" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="5" y1="50" x2="75" y2="50" stroke="#f59e0b" stroke-width="2" />
-                        <line x1="15" y1="50" x2="40" y2="12" stroke="#f59e0b" stroke-width="1.2" />
-                        <line x1="65" y1="50" x2="40" y2="12" stroke="#f59e0b" stroke-width="1.2" />
-                        <line x1="27" y1="31" x2="53" y2="31" stroke="#f59e0b" stroke-width="1" opacity="0.6" />
-                        <line x1="15" y1="50" x2="27" y2="31" stroke="#f59e0b" stroke-width="0.8" opacity="0.4"
-                            stroke-dasharray="3 2" />
-                        <line x1="65" y1="50" x2="53" y2="31" stroke="#f59e0b" stroke-width="0.8" opacity="0.4"
-                            stroke-dasharray="3 2" />
-                        <line x1="40" y1="12" x2="40" y2="50" stroke="#f59e0b" stroke-width="0.8" opacity="0.3"
-                            stroke-dasharray="2 2" />
-                        <circle cx="40" cy="12" r="3" fill="#f59e0b" opacity="0.5" />
-                        <circle cx="15" cy="50" r="3" fill="#f59e0b" opacity="0.5" />
-                        <circle cx="65" cy="50" r="3" fill="#f59e0b" opacity="0.5" />
-                        <text x="40" y="8" text-anchor="middle" fill="#fbbf24" font-size="5" font-family="sans-serif"
-                            opacity="0.7">F</text>
+                        <!-- Flask -->
+                        <path d="M32,8 L32,25 L15,52 L65,52 L48,25 L48,8" stroke="#f59e0b" stroke-width="1.3"
+                            fill="rgba(245,158,11,0.06)" />
+                        <line x1="28" y1="8" x2="52" y2="8" stroke="#f59e0b" stroke-width="1.5" />
+                        <!-- Liquid -->
+                        <path d="M22,42 L58,42 L65,52 L15,52 Z" fill="rgba(245,158,11,0.15)" />
+                        <!-- Bubbles -->
+                        <circle cx="35" cy="46" r="2" fill="#f59e0b" opacity="0.4" />
+                        <circle cx="45" cy="44" r="1.5" fill="#fbbf24" opacity="0.5" />
+                        <circle cx="40" cy="38" r="1" fill="#f59e0b" opacity="0.3" />
+                        <!-- Atom symbol -->
+                        <ellipse cx="65" cy="18" rx="8" ry="4" stroke="#f59e0b" stroke-width="0.8" fill="none"
+                            opacity="0.5" transform="rotate(-30 65 18)" />
+                        <ellipse cx="65" cy="18" rx="8" ry="4" stroke="#f59e0b" stroke-width="0.8" fill="none"
+                            opacity="0.5" transform="rotate(30 65 18)" />
+                        <circle cx="65" cy="18" r="2" fill="#f59e0b" opacity="0.6" />
                     </svg>
                 </div>
-                <div class="fc-text">Structural Analysis</div>
-                <div class="fc-sub">Civil Engineering</div>
-            </div>
+                <div class="fc-text">Engg. Chemistry</div>
+                <div class="fc-sub">First Year</div>
+            </a>
         </div>
     </div>
 </section>
