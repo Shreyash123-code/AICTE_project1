@@ -5,57 +5,48 @@
 {% block content %}
 <section class="dashboard-section" id="dashboard-section">
     <div class="section-container">
-        <!-- Header -->
-        <div class="dashboard-header" id="dashboard-header">
-            <div class="dashboard-welcome">
-                <h1 class="page-title">Welcome, <span class="gradient-text">{{ user.first_name }}</span> 👋</h1>
-                <p class="page-subtitle">Your notes and bookmarks.</p>
-            </div>
-            <a href="{% url 'upload' %}" class="btn btn-primary" id="dashboard-upload-btn">📤 Upload Notes</a>
-        </div>
+        <div class="dashboard-grid">
 
-        <!-- Stats -->
-        <div class="dashboard-stats" id="dashboard-stats">
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon">📤</div>
-                <div class="dash-stat-info">
-                    <span class="dash-stat-number">{{ user_notes.count }}</span>
-                    <span class="dash-stat-label">Notes Uploaded</span>
-                </div>
-            </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-icon">🔖</div>
-                <div class="dash-stat-info">
-                    <span class="dash-stat-number">{{ user_bookmarks.count }}</span>
-                    <span class="dash-stat-label">Bookmarked</span>
-                </div>
-            </div>
-        </div>
+            <!-- ===== LEFT SIDEBAR ===== -->
+            <aside class="dashboard-sidebar" id="dashboard-sidebar">
 
-        <!-- Profile -->
-        <div class="dashboard-panel" id="profile-panel">
-            <h2 class="panel-title">👤 Profile</h2>
-            <div class="profile-container">
-                <div class="profile-info-grid">
-                    <div class="info-group">
-                        <label>Name</label>
-                        <p>{{ user.get_full_name|default:user.username }}</p>
+                <!-- Welcome banner -->
+                <div class="dash-welcome-card" id="dash-welcome-card">
+                    <h1 class="dash-welcome-title">Welcome, <span class="gradient-text">{{ user.first_name|default:user.username }}</span> 👋</h1>
+                    <p class="dash-welcome-sub">Your notes and bookmarks.</p>
+                    <button type="button" class="btn btn-primary btn-sm" id="toggle-profile-form-btn"
+                        onclick="toggleProfileForm()">✏️ Edit Profile</button>
+                </div>
+
+                <!-- Profile card -->
+                <div class="dash-profile-card" id="profile-panel">
+                    <h3 class="dash-card-label">👤 Profile</h3>
+                    <div class="dash-profile-avatar">🧑‍🎓</div>
+                    <p class="dash-profile-name">{{ user.get_full_name|default:user.username }}</p>
+                    <p class="dash-profile-email">{{ user.email }}</p>
+                </div>
+
+                <!-- Stat cards -->
+                <div class="dash-stat-card" id="stat-uploaded">
+                    <div class="dash-stat-icon">📤</div>
+                    <div class="dash-stat-info">
+                        <span class="dash-stat-number">{{ user_notes.count }}</span>
+                        <span class="dash-stat-label">Notes Uploaded</span>
                     </div>
-                    <div class="info-group">
-                        <label>Email</label>
-                        <p>{{ user.email }}</p>
+                </div>
+                <div class="dash-stat-card" id="stat-bookmarked">
+                    <div class="dash-stat-icon">🔖</div>
+                    <div class="dash-stat-info">
+                        <span class="dash-stat-number">{{ user_bookmarks.count }}</span>
+                        <span class="dash-stat-label">Bookmarked</span>
                     </div>
                 </div>
 
-                <hr class="panel-divider">
-
-                <button type="button" class="btn btn-primary" id="toggle-profile-form-btn"
-                    onclick="toggleProfileForm()">✏️ Edit Profile</button>
-
-                <form method="POST" class="profile-update-form" id="profile-update-form" style="display: none;">
-                    {% csrf_token %}
-                    <h3 class="form-section-title">Update Info</h3>
-                    <div class="form-row">
+                <!-- Hidden edit-profile form -->
+                <div class="dash-edit-form-wrap" id="profile-update-form" style="display:none;">
+                    <form method="POST" class="profile-update-form">
+                        {% csrf_token %}
+                        <h3 class="form-section-title">Update Info</h3>
                         <div class="form-group">
                             <label for="{{ u_form.first_name.id_for_label }}">First Name</label>
                             {{ u_form.first_name }}
@@ -64,109 +55,117 @@
                             <label for="{{ u_form.last_name.id_for_label }}">Last Name</label>
                             {{ u_form.last_name }}
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="{{ u_form.email.id_for_label }}">Email</label>
                             {{ u_form.email }}
                         </div>
-                    </div>
-                    <button type="submit" name="update_profile" class="btn btn-primary">Save Changes</button>
-                </form>
-
-                <script>
-                    function toggleProfileForm() {
-                        const form = document.getElementById('profile-update-form');
-                        const btn = document.getElementById('toggle-profile-form-btn');
-                        if (form.style.display === 'none') {
-                            form.style.display = 'block';
-                            btn.textContent = '✕ Cancel';
-                            btn.classList.remove('btn-primary');
-                            btn.classList.add('btn-outline');
-                        } else {
-                            form.style.display = 'none';
-                            btn.textContent = '✏️ Edit Profile';
-                            btn.classList.remove('btn-outline');
-                            btn.classList.add('btn-primary');
-                        }
-                    }
-                </script>
-            </div>
-        </div>
-
-        <!-- My Notes -->
-        <div class="dashboard-panel" id="my-notes-panel">
-            <h2 class="panel-title">📚 My Notes</h2>
-            {% if user_notes %}
-            <div class="notes-grid">
-                {% for note in user_notes %}
-                <div class="note-card" id="my-note-{{ note.id }}">
-                    <div class="note-card-header">
-                        <span class="note-subject-badge">{{ note.subject.icon }} {{ note.subject.name }}</span>
-                        <span class="note-downloads">⬇️ {{ note.downloads }}</span>
-                    </div>
-                    <h3 class="note-title">{{ note.title }}</h3>
-                    <p class="note-desc">{{ note.description|truncatewords:15 }}</p>
-                    <div class="note-card-footer">
-                        <span class="note-date">{{ note.created_at|timesince }} ago</span>
-                    </div>
-                    <div class="note-card-actions">
-                        <a href="javascript:void(0)"
-                            onclick="openPreview('{% url 'preview' note.id %}', '{{ note.title|escapejs }}')"
-                            class="btn btn-outline btn-sm">👁️ View</a>
-                        <a href="{% url 'download' note.id %}" class="btn btn-primary btn-sm">⬇️ Download</a>
-                        <form method="POST" action="{% url 'delete_note' note.id %}" style="display:inline;"
-                            onsubmit="return confirm('Delete &quot;{{ note.title|escapejs }}&quot;?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
-                        </form>
-                    </div>
+                        <button type="submit" name="update_profile" class="btn btn-primary btn-sm">Save Changes</button>
+                    </form>
                 </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state-sm">
-                <p>No notes uploaded yet.</p>
-                <a href="{% url 'upload' %}" class="btn btn-primary btn-sm">Upload Your First Note</a>
-            </div>
-            {% endif %}
-        </div>
+            </aside>
 
-        <!-- Bookmarks -->
-        <div class="dashboard-panel" id="bookmarks-panel">
-            <h2 class="panel-title">🔖 Bookmarks</h2>
-            {% if user_bookmarks %}
-            <div class="notes-grid">
-                {% for bookmark in user_bookmarks %}
-                <div class="note-card" id="bookmark-note-{{ bookmark.note.id }}">
-                    <div class="note-card-header">
-                        <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name }}</span>
-                        <span class="note-downloads">⬇️ {{ bookmark.note.downloads }}</span>
-                    </div>
-                    <h3 class="note-title">{{ bookmark.note.title }}</h3>
-                    <p class="note-desc">{{ bookmark.note.description|truncatewords:15 }}</p>
-                    <div class="note-card-footer">
-                        <span class="note-author">By {{ bookmark.note.uploaded_by.first_name }}</span>
-                        <span class="note-date">{{ bookmark.note.created_at|timesince }} ago</span>
-                    </div>
-                    <div class="note-card-actions">
-                        <a href="javascript:void(0)"
-                            onclick="openPreview('{% url 'preview' bookmark.note.id %}', '{{ bookmark.note.title|escapejs }}')"
-                            class="btn btn-outline btn-sm">👁️ View</a>
-                        <a href="{% url 'download' bookmark.note.id %}" class="btn btn-primary btn-sm">⬇️ Download</a>
-                        <a href="{% url 'toggle_bookmark' bookmark.note.id %}" class="btn btn-outline btn-sm">✕
-                            Remove</a>
-                    </div>
+            <!-- ===== RIGHT CONTENT ===== -->
+            <div class="dashboard-main" id="dashboard-main">
+
+                <!-- Upload button -->
+                <div class="dash-main-header">
+                    <a href="{% url 'upload' %}" class="btn btn-primary" id="dashboard-upload-btn">📤 Upload Notes</a>
                 </div>
-                {% endfor %}
+
+                <!-- My Notes -->
+                <div class="dashboard-panel" id="my-notes-panel">
+                    <h2 class="panel-title">📚 My Notes</h2>
+                    {% if user_notes %}
+                    <div class="dash-notes-list">
+                        {% for note in user_notes %}
+                        <div class="note-card" id="my-note-{{ note.id }}">
+                            <div class="note-card-header">
+                                <span class="note-subject-badge">{{ note.subject.icon }} {{ note.subject.name }}</span>
+                                <span class="note-downloads">⬇️ {{ note.downloads }}</span>
+                            </div>
+                            <h3 class="note-title">{{ note.title }}</h3>
+                            <p class="note-desc">{{ note.description|truncatewords:15 }}</p>
+                            <div class="note-card-footer">
+                                <span class="note-date">{{ note.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="note-card-actions">
+                                <a href="javascript:void(0)"
+                                    onclick="openPreview('{% url 'preview' note.id %}', '{{ note.title|escapejs }}')"
+                                    class="btn btn-outline btn-sm">👁️ View</a>
+                                <a href="{% url 'download' note.id %}" class="btn btn-primary btn-sm">⬇️ Download</a>
+                                <form method="POST" action="{% url 'delete_note' note.id %}" style="display:inline;"
+                                    onsubmit="return confirm('Delete &quot;{{ note.title|escapejs }}&quot;?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state-sm">
+                        <p>No notes uploaded yet.</p>
+                        <a href="{% url 'upload' %}" class="btn btn-primary btn-sm">Upload Your First Note</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Bookmarks -->
+                <div class="dashboard-panel" id="bookmarks-panel">
+                    <h2 class="panel-title">🔖 Bookmarks</h2>
+                    {% if user_bookmarks %}
+                    <div class="dash-notes-list">
+                        {% for bookmark in user_bookmarks %}
+                        <div class="note-card" id="bookmark-note-{{ bookmark.note.id }}">
+                            <div class="note-card-header">
+                                <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name }}</span>
+                                <span class="note-downloads">⬇️ {{ bookmark.note.downloads }}</span>
+                            </div>
+                            <h3 class="note-title">{{ bookmark.note.title }}</h3>
+                            <p class="note-desc">{{ bookmark.note.description|truncatewords:15 }}</p>
+                            <div class="note-card-footer">
+                                <span class="note-author">By {{ bookmark.note.uploaded_by.first_name }}</span>
+                                <span class="note-date">{{ bookmark.note.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="note-card-actions">
+                                <a href="javascript:void(0)"
+                                    onclick="openPreview('{% url 'preview' bookmark.note.id %}', '{{ bookmark.note.title|escapejs }}')"
+                                    class="btn btn-outline btn-sm">👁️ View</a>
+                                <a href="{% url 'download' bookmark.note.id %}" class="btn btn-primary btn-sm">⬇️
+                                    Download</a>
+                                <a href="{% url 'toggle_bookmark' bookmark.note.id %}" class="btn btn-outline btn-sm">✕
+                                    Remove</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state-sm">
+                        <p>No bookmarks yet.</p>
+                        <a href="{% url 'browse' %}" class="btn btn-primary btn-sm">Browse Notes</a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% else %}
-            <div class="empty-state-sm">
-                <p>No bookmarks yet.</p>
-                <a href="{% url 'browse' %}" class="btn btn-primary btn-sm">Browse Notes</a>
-            </div>
-            {% endif %}
         </div>
     </div>
 </section>
+
+<script>
+    function toggleProfileForm() {
+        const form = document.getElementById('profile-update-form');
+        const btn = document.getElementById('toggle-profile-form-btn');
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+            btn.textContent = '✕ Cancel';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline');
+        } else {
+            form.style.display = 'none';
+            btn.textContent = '✏️ Edit Profile';
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-primary');
+        }
+    }
+</script>
 {% endblock %}

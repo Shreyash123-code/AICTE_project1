@@ -38,10 +38,7 @@
                     <input type="checkbox" name="remember_me" id="remember-me">
                     <label for="remember-me">Remember me for 30 days</label>
                 </div>
-                <div class="form-group" style="margin-top: -10px; margin-bottom: 20px; text-align: right;">
-                    <a href="{% url 'password_reset' %}" class="forgot-password-link" id="forgot-password-link">Forgot
-                        Password?</a>
-                </div>
+
                 <button type="submit" class="btn btn-primary btn-lg btn-full" id="login-submit">Sign In</button>
             </form>
         </div>
@@ -53,18 +50,7 @@
         padding-top: 100px;
     }
 
-    .forgot-password-link {
-        font-size: 13px;
-        color: var(--primary-300);
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
 
-    .forgot-password-link:hover {
-        color: var(--primary-400);
-        text-decoration: underline;
-    }
 
     .auth-form-container {
         display: flex;
@@ -133,41 +119,41 @@
 </style>
 
 <script>
-(function () {
-    const form = document.getElementById('login-form');
-    if (!form) return;
+    (function () {
+        const form = document.getElementById('login-form');
+        if (!form) return;
 
-    function showErr(input, msg) {
-        clearErr(input);
-        const span = document.createElement('span');
-        span.className = 'form-error';
-        span.textContent = msg;
-        input.parentElement.appendChild(span);
-        input.classList.add('input-error');
-    }
-    function clearErr(input) {
-        const old = input.parentElement.querySelector('.form-error');
-        if (old) old.remove();
-        input.classList.remove('input-error');
-    }
-
-    form.addEventListener('submit', function (e) {
-        form.querySelectorAll('.form-error').forEach(el => el.remove());
-        form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
-        let valid = true;
-
-        const username = document.getElementById('login-username');
-        const password = document.getElementById('login-password');
-
-        if (username.value.trim().length < 3) {
-            showErr(username, 'Username must be at least 3 characters.'); valid = false;
+        function showErr(input, msg) {
+            clearErr(input);
+            const span = document.createElement('span');
+            span.className = 'form-error';
+            span.textContent = msg;
+            input.parentElement.appendChild(span);
+            input.classList.add('input-error');
         }
-        if (!password.value) {
-            showErr(password, 'Password is required.'); valid = false;
+        function clearErr(input) {
+            const old = input.parentElement.querySelector('.form-error');
+            if (old) old.remove();
+            input.classList.remove('input-error');
         }
 
-        if (!valid) e.preventDefault();
-    });
-})();
+        form.addEventListener('submit', function (e) {
+            form.querySelectorAll('.form-error').forEach(el => el.remove());
+            form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+            let valid = true;
+
+            const username = document.getElementById('login-username');
+            const password = document.getElementById('login-password');
+
+            if (username.value.trim().length < 3) {
+                showErr(username, 'Username must be at least 3 characters.'); valid = false;
+            }
+            if (!password.value) {
+                showErr(password, 'Password is required.'); valid = false;
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    })();
 </script>
 {% endblock %}
