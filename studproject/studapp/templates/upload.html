@@ -148,7 +148,9 @@
     const uploadArea = document.getElementById('file-upload-area');
     const uploadText = uploadArea.querySelector('.file-upload-text');
 
-    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('click', (e) => {
+        if (e.target !== fileInput) fileInput.click();
+    });
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('dragover');
