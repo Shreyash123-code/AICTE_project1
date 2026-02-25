@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -11,7 +11,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=3">
+    <script>
+        // Prevent flash of wrong theme
+        (function () {
+            var t = localStorage.getItem('studsafe-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <script src="https://instant.page/5.2.0" type="module"
         integrity="sha384-jnZyxPjiipSbmS98/NoT28F8pYu1LpAsW0f42P0BvEcl/J5fO8P0fI0+y9" defer></script>
 </head>
@@ -40,6 +47,9 @@
                 <a href="{% url 'login' %}" class="btn btn-outline btn-sm" id="nav-login">Login</a>
                 <a href="{% url 'signup' %}" class="btn btn-primary btn-sm" id="nav-signup">Sign Up</a>
                 {% endif %}
+                <button class="theme-toggle" id="theme-toggle" title="Switch theme">
+                    <span class="theme-toggle-icon">🌚</span>
+                </button>
             </div>
             <button class="nav-toggle" id="nav-toggle"
                 onclick="document.querySelector('.nav-links').classList.toggle('active'); document.querySelector('.nav-actions').classList.toggle('active');">
@@ -158,6 +168,7 @@
             }
         });
     </script>
+    <script src="{% static 'script.js' %}"></script>
 </body>
 
 </html>

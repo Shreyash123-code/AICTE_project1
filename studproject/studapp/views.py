@@ -153,7 +153,6 @@ def download_note(request, note_id):
         return redirect('browse')
 
 
-@login_required(login_url='login')
 def preview_note(request, note_id):
     """Preview a note file in the browser."""
     note = get_object_or_404(Note, id=note_id)

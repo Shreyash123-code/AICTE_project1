@@ -107,16 +107,16 @@
     .auth-visual-content {
         position: relative;
         z-index: 2;
-        background: rgba(15, 23, 42, 0.65);
+        background: var(--bg-card);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 45px;
         border-radius: var(--radius-lg);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--border-subtle);
         width: 100%;
         max-width: 500px;
         text-align: center;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        box-shadow: var(--shadow-lg);
     }
 
     .auth-visual-features {
@@ -146,82 +146,82 @@
 </style>
 
 <script>
-(function () {
-    const form = document.getElementById('signup-form');
-    if (!form) return;
+    (function () {
+        const form = document.getElementById('signup-form');
+        if (!form) return;
 
-    function showErr(input, msg) {
-        clearErr(input);
-        const span = document.createElement('span');
-        span.className = 'form-error';
-        span.textContent = msg;
-        input.parentElement.appendChild(span);
-        input.classList.add('input-error');
-    }
-    function clearErr(input) {
-        const old = input.parentElement.querySelector('.form-error');
-        if (old) old.remove();
-        input.classList.remove('input-error');
-    }
-    function clearAll() {
-        form.querySelectorAll('.form-error').forEach(e => e.remove());
-        form.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
-    }
-
-    form.addEventListener('submit', function (e) {
-        clearAll();
-        let valid = true;
-
-        const firstName = document.getElementById('signup-first-name');
-        const lastName = document.getElementById('signup-last-name');
-        const username = document.getElementById('signup-username');
-        const email = document.getElementById('signup-email');
-        const pw1 = document.getElementById('signup-password1');
-        const pw2 = document.getElementById('signup-password2');
-
-        // First name
-        if (!firstName.value.trim()) {
-            showErr(firstName, 'First name is required.'); valid = false;
-        } else if (!/^[a-zA-Z\s\-]+$/.test(firstName.value.trim())) {
-            showErr(firstName, 'Only letters, spaces, and hyphens allowed.'); valid = false;
+        function showErr(input, msg) {
+            clearErr(input);
+            const span = document.createElement('span');
+            span.className = 'form-error';
+            span.textContent = msg;
+            input.parentElement.appendChild(span);
+            input.classList.add('input-error');
+        }
+        function clearErr(input) {
+            const old = input.parentElement.querySelector('.form-error');
+            if (old) old.remove();
+            input.classList.remove('input-error');
+        }
+        function clearAll() {
+            form.querySelectorAll('.form-error').forEach(e => e.remove());
+            form.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
         }
 
-        // Last name
-        if (!lastName.value.trim()) {
-            showErr(lastName, 'Last name is required.'); valid = false;
-        } else if (!/^[a-zA-Z\s\-]+$/.test(lastName.value.trim())) {
-            showErr(lastName, 'Only letters, spaces, and hyphens allowed.'); valid = false;
-        }
+        form.addEventListener('submit', function (e) {
+            clearAll();
+            let valid = true;
 
-        // Username
-        if (username.value.trim().length < 3) {
-            showErr(username, 'Username must be at least 3 characters.'); valid = false;
-        } else if (!/^[a-zA-Z0-9_\-]+$/.test(username.value.trim())) {
-            showErr(username, 'Only letters, numbers, underscores, and hyphens.'); valid = false;
-        }
+            const firstName = document.getElementById('signup-first-name');
+            const lastName = document.getElementById('signup-last-name');
+            const username = document.getElementById('signup-username');
+            const email = document.getElementById('signup-email');
+            const pw1 = document.getElementById('signup-password1');
+            const pw2 = document.getElementById('signup-password2');
 
-        // Email
-        const emailVal = email.value.trim();
-        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,10}$/;
-        if (!emailRegex.test(emailVal)) {
-            showErr(email, 'Enter a valid email (e.g. name@example.com).'); valid = false;
-        } else {
-            const domain = emailVal.split('@')[1];
-            if (domain.split('.').length > 3) {
-                showErr(email, 'This email domain looks invalid.'); valid = false;
+            // First name
+            if (!firstName.value.trim()) {
+                showErr(firstName, 'First name is required.'); valid = false;
+            } else if (!/^[a-zA-Z\s\-]+$/.test(firstName.value.trim())) {
+                showErr(firstName, 'Only letters, spaces, and hyphens allowed.'); valid = false;
             }
-        }
 
-        // Password
-        if (pw1.value.length < 8) {
-            showErr(pw1, 'Password must be at least 8 characters.'); valid = false;
-        }
-        if (pw1.value !== pw2.value) {
-            showErr(pw2, 'Passwords do not match.'); valid = false;
-        }
+            // Last name
+            if (!lastName.value.trim()) {
+                showErr(lastName, 'Last name is required.'); valid = false;
+            } else if (!/^[a-zA-Z\s\-]+$/.test(lastName.value.trim())) {
+                showErr(lastName, 'Only letters, spaces, and hyphens allowed.'); valid = false;
+            }
 
-        if (!valid) e.preventDefault();
-    });
-})();
+            // Username
+            if (username.value.trim().length < 3) {
+                showErr(username, 'Username must be at least 3 characters.'); valid = false;
+            } else if (!/^[a-zA-Z0-9_\-]+$/.test(username.value.trim())) {
+                showErr(username, 'Only letters, numbers, underscores, and hyphens.'); valid = false;
+            }
+
+            // Email
+            const emailVal = email.value.trim();
+            const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,10}$/;
+            if (!emailRegex.test(emailVal)) {
+                showErr(email, 'Enter a valid email (e.g. name@example.com).'); valid = false;
+            } else {
+                const domain = emailVal.split('@')[1];
+                if (domain.split('.').length > 3) {
+                    showErr(email, 'This email domain looks invalid.'); valid = false;
+                }
+            }
+
+            // Password
+            if (pw1.value.length < 8) {
+                showErr(pw1, 'Password must be at least 8 characters.'); valid = false;
+            }
+            if (pw1.value !== pw2.value) {
+                showErr(pw2, 'Passwords do not match.'); valid = false;
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    })();
 </script>
 {% endblock %}

@@ -18,6 +18,27 @@
                         onclick="toggleProfileForm()">✏️ Edit Profile</button>
                 </div>
 
+                <!-- Hidden edit-profile form (appears right below Edit Profile btn) -->
+                <div class="dash-edit-form-wrap" id="profile-update-form" style="display:none;">
+                    <form method="POST" class="profile-update-form">
+                        {% csrf_token %}
+                        <h3 class="form-section-title">Update Info</h3>
+                        <div class="form-group">
+                            <label for="{{ u_form.first_name.id_for_label }}">First Name</label>
+                            {{ u_form.first_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ u_form.last_name.id_for_label }}">Last Name</label>
+                            {{ u_form.last_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ u_form.email.id_for_label }}">Email</label>
+                            {{ u_form.email }}
+                        </div>
+                        <button type="submit" name="update_profile" class="btn btn-primary btn-sm">Save Changes</button>
+                    </form>
+                </div>
+
                 <!-- Profile card -->
                 <div class="dash-profile-card" id="profile-panel">
                     <h3 class="dash-card-label">👤 Profile</h3>
@@ -40,27 +61,6 @@
                         <span class="dash-stat-number">{{ user_bookmarks.count }}</span>
                         <span class="dash-stat-label">Bookmarked</span>
                     </div>
-                </div>
-
-                <!-- Hidden edit-profile form -->
-                <div class="dash-edit-form-wrap" id="profile-update-form" style="display:none;">
-                    <form method="POST" class="profile-update-form">
-                        {% csrf_token %}
-                        <h3 class="form-section-title">Update Info</h3>
-                        <div class="form-group">
-                            <label for="{{ u_form.first_name.id_for_label }}">First Name</label>
-                            {{ u_form.first_name }}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ u_form.last_name.id_for_label }}">Last Name</label>
-                            {{ u_form.last_name }}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ u_form.email.id_for_label }}">Email</label>
-                            {{ u_form.email }}
-                        </div>
-                        <button type="submit" name="update_profile" class="btn btn-primary btn-sm">Save Changes</button>
-                    </form>
                 </div>
             </aside>
 
@@ -118,7 +118,8 @@
                         {% for bookmark in user_bookmarks %}
                         <div class="note-card" id="bookmark-note-{{ bookmark.note.id }}">
                             <div class="note-card-header">
-                                <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{ bookmark.note.subject.name }}</span>
+                                <span class="note-subject-badge">{{ bookmark.note.subject.icon }} {{
+                                    bookmark.note.subject.name }}</span>
                                 <span class="note-downloads">⬇️ {{ bookmark.note.downloads }}</span>
                             </div>
                             <h3 class="note-title">{{ bookmark.note.title }}</h3>
